@@ -1,4 +1,4 @@
-import { prisma } from "@agendazap/database";
+import { prisma, BookingStatus } from "@agendazap/database";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -17,7 +17,7 @@ async function getOrgId() {
   return org?.id ?? "";
 }
 
-const statusConfig = {
+const statusConfig: Record<BookingStatus, { label: string; variant: "warning" | "success" | "destructive" | "secondary" }> = {
   PENDENTE: { label: "Pendente", variant: "warning" as const },
   CONFIRMADO: { label: "Confirmado", variant: "success" as const },
   CANCELADO: { label: "Cancelado", variant: "destructive" as const },
