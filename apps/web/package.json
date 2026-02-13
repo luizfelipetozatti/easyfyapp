@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "postinstall": "prisma generate --schema=../../packages/database/prisma/schema.prisma"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@agendazap/database": "workspace:*",
