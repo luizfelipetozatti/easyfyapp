@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@agendazap/database";
-import type { Service } from "@prisma/client";
 import { Calendar } from "lucide-react";
 
 import { BookingPageClient } from "./booking-client";
@@ -37,6 +36,8 @@ export default async function BookingPage({ params }: BookingPageProps) {
     notFound();
   }
 
+  type ServiceType = (typeof org.services)[number];
+
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Header */}
@@ -60,7 +61,7 @@ export default async function BookingPage({ params }: BookingPageProps) {
             name: org.name,
             slug: org.slug,
           }}
-          services={org.services.map((s: Service) => ({
+          services={org.services.map((s: ServiceType) => ({
             id: s.id,
             name: s.name,
             description: s.description,
