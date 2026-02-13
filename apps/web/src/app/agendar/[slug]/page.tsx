@@ -36,6 +36,30 @@ export default async function BookingPage({ params }: BookingPageProps) {
     notFound();
   }
 
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b bg-card">
+        <div className="container mx-auto flex items-center gap-3 px-4 py-6">
+          <Calendar className="h-8 w-8 text-primary" />
+          <div>
+            <h1 className="text-2xl font-bold">{org.name}</h1>
+            <p className="text-sm text-muted-foreground">
+              Escolha um serviço e agende seu horário
+            </p>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        <BookingPageClient
+          organization={{
+            id: org.id,
+            name: org.name,
+            slug: org.slug,
+            timezone: org.timezone,
+          }}
           services={org.services.map((s: Service) => ({
             id: s.id,
             name: s.name,
