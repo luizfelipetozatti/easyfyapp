@@ -1,0 +1,14 @@
+{
+  "name": "@agendazap/typescript-config",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "main": "index.js",
+  "files": [
+    "base.json",
+    "nextjs.json"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

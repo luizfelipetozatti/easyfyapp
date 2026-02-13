@@ -1,0 +1,141 @@
+// ============================================================
+// AgendaZap - Schema Prisma
+// Multi-tenant SaaS de agendamento com WhatsApp
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum BookingStatus {
+  PENDENTE
+  CONFIRMADO
+  CANCELADO
+  CONCLUIDO
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+// ============================================================
+// MULTI-TENANCY: Organizations
+// ============================================================
+
+model Organization {
+  id               String   @id @default(uuid()) @db.Uuid
+  name             String
+  slug             String   @unique
+  whatsappNumber   String?  @map("whatsapp_number")
+  apiKeyWhatsapp   String?  @map("api_key_whatsapp")
+  evolutionInstance String?  @map("evolution_instance")
+  logoUrl          String?  @map("logo_url")
+  timezone         String   @default("America/Sao_Paulo")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  members  OrganizationMember[]
+  services Service[]
+  bookings Booking[]
+
+  @@map("organizations")
+}
+
+// ============================================================
+// USERS & MEMBERSHIP
+// ============================================================
+
+model User {
+  id            String   @id @default(uuid()) @db.Uuid
+  email         String   @unique
+  name          String?
+  avatarUrl     String?  @map("avatar_url")
+  supabaseId    String?  @unique @map("supabase_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  memberships OrganizationMember[]
+
+  @@map("users")
+}
+
+model OrganizationMember {
+  id             String       @id @default(uuid()) @db.Uuid
+  userId         String       @map("user_id") @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  role           UserRole     @default(MEMBER)
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  // Relations
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@map("organization_members")
+}
+
+// ============================================================
+// SERVICES (Serviços oferecidos)
+// ============================================================
+
+model Service {
+  id              String   @id @default(uuid()) @db.Uuid
+  organizationId  String   @map("organization_id") @db.Uuid
+  name            String
+  description     String?
+  price           Decimal  @db.Decimal(10, 2)
+  durationMinutes Int      @map("duration_minutes")
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  bookings     Booking[]
+
+  @@index([organizationId])
+  @@map("services")
+}
+
+// ============================================================
+// BOOKINGS (Agendamentos)
+// ============================================================
+
+model Booking {
+  id              String        @id @default(uuid()) @db.Uuid
+  organizationId  String        @map("organization_id") @db.Uuid
+  serviceId       String        @map("service_id") @db.Uuid
+  clientName      String        @map("cliente_nome")
+  clientPhone     String        @map("cliente_phone")
+  clientEmail     String?       @map("cliente_email")
+  startTime       DateTime      @map("start_time")
+  endTime         DateTime      @map("end_time")
+  status          BookingStatus @default(PENDENTE)
+  notes           String?
+  whatsappSent    Boolean       @default(false) @map("whatsapp_sent")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  service      Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([organizationId, startTime])
+  @@index([organizationId, status])
+  @@map("bookings")
+}

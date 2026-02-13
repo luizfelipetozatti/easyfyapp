@@ -1,0 +1,13 @@
+{
+  "name": "@agendazap/tailwind-config",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./tailwind.config.ts",
+  "dependencies": {
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "@types/node": "^20.12.7"
+  }
+}
