@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma, UserRole } from "@agendazap/database";
+import { prisma, UserRole, type Prisma } from "@agendazap/database";
 
 export async function POST(request: Request) {
   try {
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       : slug;
 
     // Criar user, org e membership em transação
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const user = await tx.user.create({
         data: {
           email,
