@@ -2,6 +2,9 @@
 const nextConfig = {
   output: "standalone",
   transpilePackages: ["@agendazap/ui", "@agendazap/database"],
+  experimental: {
+    serverComponentsExternalPackages: ["@prisma/client", "@prisma/engines"],
+  },
   images: {
     remotePatterns: [
       {
