@@ -1,0 +1,19 @@
+{
+  "buildCommand": "pnpm vercel-build",
+  "outputDirectory": "apps/web/.next",
+  "framework": "nextjs",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 10
+    },
+    "app/dashboard/**/*.tsx": {  
+      "maxDuration": 10
+    }
+  },
+  "env": {
+    "PRISMA_GENERATE_DATAPROXY": "false",
+    "SKIP_ENV_VALIDATION": "true"
+  },
+  "crons": []
+}

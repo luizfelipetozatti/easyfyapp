@@ -86,15 +86,18 @@ function main() {
     process.exit(1);
   }
 
-  // Destinations where Next.js looks for the engine
-  const destinations = [
+  // Destinations where Next.js and Vercel look for the engine
+  const engineDestinations = [
     path.resolve(appRoot, ".next/server"),
+    path.resolve(appRoot, ".next/server/chunks"),
     path.resolve(appRoot, ".next/standalone/apps/web/.next/server"),
+    path.resolve(appRoot, ".next/standalone/apps/web/.next/server/chunks"),
     path.resolve(appRoot, ".next/standalone/node_modules/.prisma/client"),
+    path.resolve(appRoot, "node_modules/.prisma/client"),
   ];
 
   let success = false;
-  for (const dest of destinations) {
+  for (const dest of engineDestinations) {
     try {
       if (copyEngineFiles(prismaClientDir, dest)) {
         success = true;
@@ -104,10 +107,14 @@ function main() {
     }
   }
 
-  // Also copy the entire .prisma/client directory structure
+  // Full .prisma/client directory structure destinations (includes schema.prisma, index.js, etc.)
   const prismaDestinations = [
+    path.resolve(appRoot, ".prisma/client"),
     path.resolve(appRoot, ".next/server/.prisma/client"),
+    path.resolve(appRoot, ".next/standalone/apps/web/.prisma/client"),
+    path.resolve(appRoot, ".next/standalone/apps/web/node_modules/.prisma/client"),
     path.resolve(appRoot, ".next/standalone/node_modules/.prisma/client"),
+    path.resolve(monoRoot, ".next/standalone/packages/database/node_modules/.prisma/client"),
   ];
 
   for (const dest of prismaDestinations) {
