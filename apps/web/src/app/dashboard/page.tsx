@@ -45,6 +45,7 @@ export default async function DashboardPage() {
     pendingCount,
     confirmedCount,
     cancelledCount,
+    completedCount,
     totalRevenue,
   ] = await Promise.all([
     prisma.booking.count({
@@ -68,10 +69,13 @@ export default async function DashboardPage() {
     prisma.booking.count({
       where: { organizationId: orgId, status: "CANCELADO" },
     }),
+    prisma.booking.count({
+      where: { organizationId: orgId, status: "CONCLUIDO" },
+    }),
     prisma.booking.findMany({
       where: {
         organizationId: orgId,
-        status: { in: ["CONFIRMADO", "CONCLUIDO"] },
+        status: "CONCLUIDO",
         startTime: { gte: monthStart, lte: monthEnd },
       },
       include: { service: { select: { price: true } } },
@@ -100,7 +104,7 @@ export default async function DashboardPage() {
   });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground">
@@ -109,7 +113,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Hoje"
           value={todayBookings.toString()}
@@ -132,12 +136,12 @@ export default async function DashboardPage() {
           title="Receita Mensal"
           value={revenueFormatted}
           icon={DollarSign}
-          description="confirmados + concluídos"
+          description="serviços concluídos"
         />
       </div>
 
       {/* Status breakdown */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="flex items-center gap-4 pt-6">
             <div className="rounded-full bg-yellow-100 p-3 dark:bg-yellow-900">
@@ -168,6 +172,17 @@ export default async function DashboardPage() {
             <div>
               <p className="text-2xl font-bold">{cancelledCount}</p>
               <p className="text-sm text-muted-foreground">Cancelados</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-4 pt-6">
+            <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900">
+              <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-300" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{completedCount}</p>
+              <p className="text-sm text-muted-foreground">Concluídos</p>
             </div>
           </CardContent>
         </Card>
