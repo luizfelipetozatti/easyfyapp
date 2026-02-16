@@ -59,6 +59,7 @@ function main() {
       appRoot,
       ".next/standalone/apps/web/node_modules/.prisma/client"
     ),
+    path.resolve(appRoot, ".next/server/node_modules/.prisma/client"),
   ];
 
   for (const dest of destinations) {
