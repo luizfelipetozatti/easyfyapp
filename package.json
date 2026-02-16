@@ -8,8 +8,8 @@
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
-    "vercel-build": "bash scripts/vercel-build.sh",
-    "postinstall": "pnpm db:generate",
+    "vercel-build": "turbo build --filter=@agendazap/web",
+    "postinstall": "turbo db:generate || true",
     "lint": "turbo lint",
     "type-check": "turbo type-check",
     "db:generate": "turbo db:generate",
