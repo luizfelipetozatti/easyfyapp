@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole } from "@prisma/client";
+import { PrismaClient, UserRole } from "./generated/prisma";
 import { createSupabaseAdmin } from "./supabase";
 
 const prisma = new PrismaClient();
