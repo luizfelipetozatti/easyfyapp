@@ -13,6 +13,7 @@ function findPrismaClientDir() {
     path.resolve(monoRoot, "node_modules/.prisma/client"),
     path.resolve(appRoot, "node_modules/.prisma/client"),
     path.resolve(monoRoot, "packages/database/node_modules/.prisma/client"),
+    path.resolve(monoRoot, "packages/database/src/generated/prisma"),
   ];
 
   // Check pnpm virtual store
