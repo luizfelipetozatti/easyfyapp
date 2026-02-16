@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm vercel-build",
+  "buildCommand": "turbo build --filter=@agendazap/web",
   "outputDirectory": "apps/web/.next",
   "framework": "nextjs",
   "installCommand": "pnpm install --frozen-lockfile",
