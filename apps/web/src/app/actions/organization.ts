@@ -304,7 +304,8 @@ export async function requestReactivation(email: string) {
 
     // Enviar email de reativação
     try {
-      const sendEmailResponse = await fetch("/api/auth/send-reactivation-email", {
+      const emailApiUrl = `${baseUrl}/api/auth/send-reactivation-email`;
+      const sendEmailResponse = await fetch(emailApiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
