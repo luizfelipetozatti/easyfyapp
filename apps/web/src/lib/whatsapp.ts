@@ -1,5 +1,5 @@
 // ============================================================
-// AgendaZap - WhatsApp Service (Evolution API)
+// Easyfy - WhatsApp Service (Evolution API)
 // ============================================================
 
 import { format } from "date-fns";
@@ -71,7 +71,7 @@ export function buildBookingConfirmationMessage(
     ``,
     `Caso precise cancelar ou reagendar, entre em contato conosco.`,
     ``,
-    `_Mensagem automática - AgendaZap_`,
+    `_Mensagem automática - Easyfy_`,
   ].join("\n");
 }
 
@@ -89,7 +89,7 @@ export function buildBookingCancellationMessage(
     ``,
     `Se desejar reagendar, acesse nosso link de agendamento.`,
     ``,
-    `_Mensagem automática - AgendaZap_`,
+    `_Mensagem automática - Easyfy_`,
   ].join("\n");
 }
 
@@ -112,7 +112,7 @@ export function buildBookingReminderMessage(
     ``,
     `Confirme sua presença respondendo esta mensagem.`,
     ``,
-    `_Mensagem automática - AgendaZap_`,
+    `_Mensagem automática - Easyfy_`,
   ].join("\n");
 }
 

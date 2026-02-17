@@ -100,7 +100,7 @@ curl -X POST "$EVOLUTION_URL/instance/create" \
 ```json
 {
   "instance": {
-    "instanceName": "agendazap",
+    "instanceName": "easyfy",
     "status": "created"
   },
   "qrcode": {
@@ -232,7 +232,7 @@ Edite as funções em `whatsapp.ts`:
 ```json
 {
   "event": "messages.upsert",
-  "instance": "agendazap",
+  "instance": "easyfy",
   "data": {
     "key": {
       "remoteJid": "5511999999999@s.whatsapp.net",
@@ -293,7 +293,7 @@ docker restart evolution-api
 **Solução**:
 ```bash
 # Verificar estado
-curl -X GET "$EVOLUTION_URL/instance/connectionState/agendazap" \
+curl -X GET "$EVOLUTION_URL/instance/connectionState/easyfy" \
   -H "apikey: $API_KEY"
 
 # Se "close", reconectar

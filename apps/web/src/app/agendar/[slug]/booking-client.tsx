@@ -1,7 +1,7 @@
 "use client";
 
 // ============================================================
-// AgendaZap - Página de Booking (Client Component)
+// Easyfy - Página de Booking (Client Component)
 // Fluxo: Selecionar Serviço → Escolher Horário → Preencher Dados
 // ============================================================
 

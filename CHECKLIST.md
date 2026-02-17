@@ -1,4 +1,4 @@
-# ✅ Checklist de Validação - AgendaZap
+# ✅ Checklist de Validação - Easyfy
 
 Use este checklist para garantir que tudo está configurado corretamente.
 
@@ -37,7 +37,7 @@ Deve retornar policies para: `bookings`, `organizations`, `organization_members`
 ## 4. Evolution API (WhatsApp)
 
 - [ ] Evolution API rodando e acessível
-- [ ] Instância `agendazap` criada
+- [ ] Instância `easyfy` criada
 - [ ] QR Code escaneado (WhatsApp conectado)
 - [ ] Webhook configurado apontando para `/api/webhook/whatsapp`
 - [ ] Variáveis configuradas no `.env.local`:
@@ -48,7 +48,7 @@ Deve retornar policies para: `bookings`, `organizations`, `organization_members`
 ### Validar WhatsApp:
 ```bash
 # Testar conexão com a API
-curl -X GET https://sua-evolution-api.com/instance/connectionState/agendazap \
+curl -X GET https://sua-evolution-api.com/instance/connectionState/easyfy \
   -H "apikey: sua-api-key"
 
 # Deve retornar: {"state": "open"}
@@ -198,4 +198,4 @@ Verifique:
 
 ---
 
-**Se todos os checkboxes estão marcados: 🎉 Parabéns! AgendaZap está operacional!**
+**Se todos os checkboxes estão marcados: 🎉 Parabéns! Easyfy está operacional!**

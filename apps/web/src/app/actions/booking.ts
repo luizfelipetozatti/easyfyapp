@@ -1,7 +1,7 @@
 "use server";
 
 // ============================================================
-// AgendaZap - Server Actions para Bookings
+// Easyfy - Server Actions para Bookings
 // ============================================================
 
 import { prisma } from "@easyfyapp/database";

@@ -53,7 +53,7 @@ export default async function DashboardLayout({
           {/* Logo */}
           <div className="flex h-16 items-center gap-2 border-b px-6">
             <Calendar className="h-6 w-6 text-primary" />
-            <span className="text-lg font-bold">AgendaZap</span>
+            <span className="text-lg font-bold">Easyfy</span>
           </div>
 
           {/* Nav */}

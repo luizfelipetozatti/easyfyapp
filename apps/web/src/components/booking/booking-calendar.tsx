@@ -1,7 +1,7 @@
 "use client";
 
 // ============================================================
-// AgendaZap - Componente de Calendário para Seleção de Horários
+// Easyfy - Componente de Calendário para Seleção de Horários
 // Usa date-fns para manipulação de datas
 // ============================================================
 

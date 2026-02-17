@@ -47,7 +47,7 @@ function getReactivationEmailTemplate(organizationName: string, reactivationUrl:
             </p>
           </div>
           <div class="footer">
-            <p>AgendaZap © ${new Date().getFullYear()}</p>
+            <p>Easyfy © ${new Date().getFullYear()}</p>
           </div>
         </div>
       </body>

@@ -1,4 +1,4 @@
-# 🚀 AgendaZap - Guia de Setup
+# 🚀 Easyfy - Guia de Setup
 
 ## Pré-requisitos
 
@@ -10,7 +10,7 @@
 ## 1. Instalação das Dependências
 
 ```bash
-cd d:\Felipe\Projetos\agendazap
+cd d:\Felipe\Projetos\easyfy
 pnpm install
 ```
 
@@ -48,7 +48,7 @@ DIRECT_URL=postgresql://postgres.[projeto]:[senha]@aws-0-sa-east-1.pooler.supaba
 # Evolution API (configure depois)
 EVOLUTION_API_URL=https://sua-evolution-api.com
 EVOLUTION_API_KEY=sua-api-key
-EVOLUTION_INSTANCE=agendazap
+EVOLUTION_INSTANCE=easyfy
 
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -105,20 +105,20 @@ curl -X POST https://sua-evolution-api.com/instance/create \
   -H "apikey: sua-api-key" \
   -H "Content-Type: application/json" \
   -d '{
-    "instanceName": "agendazap",
+    "instanceName": "easyfy",
     "qrcode": true,
     "integration": "WHATSAPP-BAILEYS"
   }'
 ```
 
 2. Conectar WhatsApp:
-   - Acesse: `https://sua-evolution-api.com/instance/connect/agendazap`
+   - Acesse: `https://sua-evolution-api.com/instance/connect/easyfy`
    - Escaneie QR Code com WhatsApp
    - Aguarde "Connected"
 
 ### 5.3. Configurar Webhook
 ```bash
-curl -X POST https://sua-evolution-api.com/webhook/set/agendazap \
+curl -X POST https://sua-evolution-api.com/webhook/set/easyfy \
   -H "apikey: sua-api-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -253,4 +253,4 @@ Para dúvidas:
 
 ---
 
-**AgendaZap** - Agendamento inteligente com WhatsApp automático 🚀
+**Easyfy** - Agendamento inteligente com WhatsApp automático 🚀

@@ -1,5 +1,5 @@
 #!/usr/bin/env pwsh
-# AgendaZap - Script de Desenvolvimento (PowerShell)
+# Easyfy - Script de Desenvolvimento (PowerShell)
 # Execute: .\dev.ps1 [comando]
 
 param(
@@ -8,7 +8,7 @@ param(
 )
 
 function Show-Help {
-    Write-Host "🚀 AgendaZap - Comandos Disponíveis" -ForegroundColor Green
+    Write-Host "🚀 Easyfy - Comandos Disponíveis" -ForegroundColor Green
     Write-Host ""
     Write-Host "Desenvolvimento:" -ForegroundColor Yellow
     Write-Host "  .\dev.ps1 install    - Instalar dependências"

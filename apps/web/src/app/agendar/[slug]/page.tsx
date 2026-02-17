@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: BookingPageProps) {
   if (!org) return { title: "Não encontrado" };
 
   return {
-    title: `Agendar - ${org.name} | AgendaZap`,
+    title: `Agendar - ${org.name} | Easyfy`,
     description: `Agende seu horário em ${org.name}`,
   };
 }
@@ -82,7 +82,7 @@ export default async function BookingPage({ params }: BookingPageProps) {
       <footer className="border-t py-6 text-center text-xs text-muted-foreground">
         Powered by{" "}
         <a href="/" className="font-medium text-primary hover:underline">
-          AgendaZap
+          Easyfy
         </a>
       </footer>
     </div>

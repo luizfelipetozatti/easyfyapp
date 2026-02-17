@@ -1,7 +1,7 @@
 "use client";
 
 // ============================================================
-// AgendaZap - Formulário de Booking
+// Easyfy - Formulário de Booking
 // ============================================================
 
 import {

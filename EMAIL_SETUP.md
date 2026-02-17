@@ -32,7 +32,7 @@ Se você está vendo o erro **"Error sending confirmation email"** ao criar uma 
 2. Ative a **Verificação em duas etapas** (se ainda não estiver)
 3. Vá em **Senhas de app**: https://myaccount.google.com/apppasswords
 4. Crie uma senha de app:
-   - Nome: "AgendaZap"
+   - Nome: "Easyfy"
    - Copie a senha gerada (16 caracteres sem espaços)
 
 #### Passo 2: Configurar SMTP no Supabase
@@ -48,7 +48,7 @@ Port: 587
 Username: seu-email@gmail.com
 Password: [senha de app gerada no passo 1]
 Sender email: seu-email@gmail.com
-Sender name: AgendaZap
+Sender name: Easyfy
 ```
 
 5. Clique em **Save**
@@ -104,7 +104,7 @@ Após configurar o SMTP:
 
 ## � Emails de Reativação de Organização
 
-AgendaZap envia emails de reativação quando uma organização é desativada. Estes emails são enviados via **Resend** ou necessitam de configuração adicional.
+Easyfy envia emails de reativação quando uma organização é desativada. Estes emails são enviados via **Resend** ou necessitam de configuração adicional.
 
 ### Opção 1: Usar Resend (Recomendado para Reativação)
 

@@ -1,5 +1,5 @@
 // ============================================================
-// AgendaZap - Webhook para Evolution API (WhatsApp)
+// Easyfy - Webhook para Evolution API (WhatsApp)
 // Recebe eventos de mensagens e status updates
 // ============================================================
 
@@ -115,7 +115,7 @@ async function handleIncomingMessage(phone: string, text: string) {
 export async function GET() {
   return NextResponse.json({
     status: "ok",
-    service: "agendazap-whatsapp-webhook",
+    service: "easyfy-whatsapp-webhook",
     timestamp: new Date().toISOString(),
   });
 }

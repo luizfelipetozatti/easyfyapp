@@ -1,5 +1,5 @@
 # ============================================================
-# AGENDAZAP - Variáveis de Ambiente
+# EASYFY - Variáveis de Ambiente
 # ============================================================
 # Copie este arquivo para apps/web/.env.local e preencha os valores
 
@@ -40,7 +40,7 @@ EVOLUTION_API_KEY=sua-chave-secreta-aqui
 
 # Nome da instância criada na Evolution API
 # Deve corresponder ao instanceName usado no POST /instance/create
-EVOLUTION_INSTANCE=agendazap
+EVOLUTION_INSTANCE=easyfy
 
 # ============================================================
 # APLICAÇÃO

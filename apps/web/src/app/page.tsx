@@ -10,7 +10,7 @@ export default function HomePage() {
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <Calendar className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">AgendaZap</span>
+            <span className="text-xl font-bold">Easyfy</span>
           </div>
           <nav className="flex items-center gap-4">
             <Link href="/login">
@@ -91,7 +91,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t py-8">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} AgendaZap. Todos os direitos
+          &copy; {new Date().getFullYear()} Easyfy. Todos os direitos
           reservados.
         </div>
       </footer>

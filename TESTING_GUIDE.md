@@ -30,7 +30,7 @@ curl "$EVOLUTION_URL/instance/fetchInstances" `
 
 ### 1.3. Verificar conexão WhatsApp
 ```powershell
-curl "$EVOLUTION_URL/instance/connectionState/agendazap" `
+curl "$EVOLUTION_URL/instance/connectionState/easyfy" `
   -H "apikey: $API_KEY" | ConvertFrom-Json
 # Esperado: {"state": "open"}
 ```
@@ -40,11 +40,11 @@ curl "$EVOLUTION_URL/instance/connectionState/agendazap" `
 $body = @{
   number = "5511999999999"
   textMessage = @{
-    text = "🧪 Teste AgendaZap"
+    text = "🧪 Teste Easyfy"
   }
 } | ConvertTo-Json
 
-curl "$EVOLUTION_URL/message/sendText/agendazap" `
+curl "$EVOLUTION_URL/message/sendText/easyfy" `
   -Method POST `
   -H "apikey: $API_KEY" `
   -H "Content-Type: application/json" `
@@ -111,7 +111,7 @@ ORDER BY tablename, policyname;
 ### 3.1. Health check webhook
 ```powershell
 curl "$APP_URL/api/webhook/whatsapp" | ConvertFrom-Json
-# Esperado: {"status": "ok", "service": "agendazap-whatsapp-webhook"}
+# Esperado: {"status": "ok", "service": "easyfy-whatsapp-webhook"}
 ```
 
 ### 3.2. Buscar slots disponíveis
@@ -131,7 +131,7 @@ curl "$APP_URL/api/slots?$query" | ConvertFrom-Json
 ```powershell
 $webhookBody = @{
   event = "messages.upsert"
-  instance = "agendazap"
+  instance = "easyfy"
   data = @{
     key = @{
       remoteJid = "5511999999999@s.whatsapp.net"

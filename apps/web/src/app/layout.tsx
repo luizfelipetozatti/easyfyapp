@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "AgendaZap - Agendamento com WhatsApp",
+  title: "Easyfy - Agendamento com WhatsApp",
   description:
     "Plataforma de agendamento para negócios locais com automação de WhatsApp",
   keywords: ["agendamento", "whatsapp", "clínica", "coworking", "saas"],

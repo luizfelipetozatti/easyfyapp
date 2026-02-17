@@ -1,5 +1,5 @@
 -- ============================================================
--- AgendaZap - Atualização RLS para Soft Delete
+-- Easyfy - Atualização RLS para Soft Delete
 -- Execute este SQL no Supabase SQL Editor
 -- ============================================================
 

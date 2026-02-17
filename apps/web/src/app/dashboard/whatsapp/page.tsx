@@ -85,15 +85,15 @@ export default function WhatsAppPage() {
           <CardContent className="space-y-4">
             <TemplatePreview
               title="Confirmação de Agendamento"
-              message={`Olá [nome]! 👋\n\nSeu agendamento para *[serviço]* na data *[data]* foi recebido!\n\n📍 *[organização]*\n💰 Valor: R$ [valor]\n\nPague o PIX para confirmar sua reserva.\n\n_Mensagem automática - AgendaZap_`}
+              message={`Olá [nome]! 👋\n\nSeu agendamento para *[serviço]* na data *[data]* foi recebido!\n\n📍 *[organização]*\n💰 Valor: R$ [valor]\n\nPague o PIX para confirmar sua reserva.\n\n_Mensagem automática - Easyfy_`}
             />
             <TemplatePreview
               title="Cancelamento"
-              message={`Olá [nome],\n\nInformamos que seu agendamento para *[serviço]* em *[data]* foi *cancelado*.\n\nSe desejar reagendar, acesse nosso link.\n\n_Mensagem automática - AgendaZap_`}
+              message={`Olá [nome],\n\nInformamos que seu agendamento para *[serviço]* em *[data]* foi *cancelado*.\n\nSe desejar reagendar, acesse nosso link.\n\n_Mensagem automática - Easyfy_`}
             />
             <TemplatePreview
               title="Lembrete (24h antes)"
-              message={`Lembrete: Olá [nome]! 🔔\n\nSua consulta/reserva para *[serviço]* é amanhã, *[data]*.\n\n📍 *[organização]*\n\nConfirme respondendo esta mensagem.\n\n_Mensagem automática - AgendaZap_`}
+              message={`Lembrete: Olá [nome]! 🔔\n\nSua consulta/reserva para *[serviço]* é amanhã, *[data]*.\n\n📍 *[organização]*\n\nConfirme respondendo esta mensagem.\n\n_Mensagem automática - Easyfy_`}
             />
           </CardContent>
         </Card>

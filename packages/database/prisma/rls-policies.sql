@@ -1,5 +1,5 @@
 -- ============================================================
--- AgendaZap - Supabase Row Level Security (RLS)
+-- Easyfy - Supabase Row Level Security (RLS)
 -- Execute este SQL no Supabase SQL Editor após prisma db push
 -- ============================================================
 
