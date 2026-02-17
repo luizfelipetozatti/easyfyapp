@@ -1,4 +1,4 @@
-import { prisma } from "@agendazap/database";
+import { prisma } from "@easyfyapp/database";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {

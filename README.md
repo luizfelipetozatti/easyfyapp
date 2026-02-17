@@ -1,11 +1,11 @@
-# AgendaZap - Micro-SaaS de Agendamento Multi-Tenant
+# Easyfy - Micro-SaaS de Agendamento Multi-Tenant
 
 Plataforma de agendamento para negócios locais (clínicas e coworkings) com automação de WhatsApp.
 
 ## Estrutura do Monorepo
 
 ```
-agendazap/
+easyfyapp/
 ├── apps/
 │   └── web/                    # Next.js 14 (App Router)
 │       ├── app/

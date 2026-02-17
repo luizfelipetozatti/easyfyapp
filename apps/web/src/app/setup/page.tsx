@@ -12,7 +12,7 @@ import {
   CardDescription,
   CardContent,
   PhoneInput,
-} from "@agendazap/ui";
+} from "@easyfyapp/ui";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 

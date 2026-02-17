@@ -1,4 +1,4 @@
-import { prisma, UserRole } from "@agendazap/database";
+import { prisma, UserRole } from "@easyfyapp/database";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 

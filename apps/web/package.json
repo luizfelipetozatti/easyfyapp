@@ -1,17 +1,17 @@
 {
-  "name": "@agendazap/web",
+  "name": "@easyfyapp/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "pnpm --filter @agendazap/database db:generate && npx next build && node scripts/copy-prisma.js",
+    "build": "pnpm --filter @easyfyapp/database db:generate && npx next build && node scripts/copy-prisma.js",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@agendazap/database": "workspace:*",
-    "@agendazap/ui": "workspace:*",
+    "@easyfyapp/database": "workspace:*",
+    "@easyfyapp/ui": "workspace:*",
     "@hookform/resolvers": "^3.3.0",
     "@supabase/ssr": "^0.1.0",
     "@supabase/supabase-js": "^2.45.0",
@@ -27,9 +27,9 @@
     "zod": "^3.22.0"
   },
   "devDependencies": {
-    "@agendazap/eslint-config": "workspace:*",
-    "@agendazap/tailwind-config": "workspace:*",
-    "@agendazap/typescript-config": "workspace:*",
+    "@easyfyapp/eslint-config": "workspace:*",
+    "@easyfyapp/tailwind-config": "workspace:*",
+    "@easyfyapp/typescript-config": "workspace:*",
     "@prisma/nextjs-monorepo-workaround-plugin": "^7.4.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",

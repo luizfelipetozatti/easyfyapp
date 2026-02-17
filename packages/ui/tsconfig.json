@@ -1,5 +1,5 @@
 {
-  "extends": "@agendazap/typescript-config/base.json",
+  "extends": "@easyfyapp/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",

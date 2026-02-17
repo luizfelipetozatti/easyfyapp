@@ -1,5 +1,5 @@
 {
-  "buildCommand": "turbo build --filter=@agendazap/web",
+  "buildCommand": "turbo build --filter=@easyfyapp/web",
   "outputDirectory": ".next",
   "installCommand": "pnpm install --frozen-lockfile",
   "functions": {

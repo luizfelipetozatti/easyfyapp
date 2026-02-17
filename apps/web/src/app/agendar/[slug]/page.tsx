@@ -1,4 +1,4 @@
-import { prisma } from "@agendazap/database";
+import { prisma } from "@easyfyapp/database";
 import { Calendar } from "lucide-react";
 import { notFound } from "next/navigation";
 

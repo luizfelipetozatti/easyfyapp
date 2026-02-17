@@ -21,7 +21,7 @@ Use este checklist para garantir que tudo está configurado corretamente.
 - [ ] Schema Prisma gerado (`pnpm db:generate`)
 - [ ] Tabelas criadas no Supabase (`pnpm db:push`)
 - [ ] RLS policies aplicadas (executou `rls-policies.sql` no SQL Editor)
-- [ ] Seed executado (opcional: `pnpm --filter @agendazap/database db:seed`)
+- [ ] Seed executado (opcional: `pnpm --filter @easyfyapp/database db:seed`)
 
 ### Validar RLS:
 ```sql

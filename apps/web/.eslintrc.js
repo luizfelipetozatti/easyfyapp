@@ -1,4 +1,4 @@
 module.exports = {
   root: true,
-  extends: ["@agendazap/eslint-config/nextjs"],
+  extends: ["@easyfyapp/eslint-config/nextjs"],
 };

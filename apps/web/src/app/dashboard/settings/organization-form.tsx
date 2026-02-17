@@ -10,7 +10,7 @@ import {
   Label,
   Button,
   PhoneInput,
-} from "@agendazap/ui";
+} from "@easyfyapp/ui";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { updateOrganization } from "@/app/actions/organization";

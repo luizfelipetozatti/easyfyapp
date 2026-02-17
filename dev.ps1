@@ -68,7 +68,7 @@ switch ($Command) {
     }
     "db:seed" {
         Write-Host "🌱 Populando banco com dados de exemplo..." -ForegroundColor Cyan
-        pnpm --filter @agendazap/database db:seed
+        pnpm --filter @easyfyapp/database db:seed
     }
     "db:reset" {
         Write-Host "⚠️  ATENÇÃO: Isso irá DELETAR todos os dados!" -ForegroundColor Red

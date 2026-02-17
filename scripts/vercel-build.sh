@@ -9,7 +9,7 @@ pnpm prisma generate
 cd ../.. 
 
 echo "📦 Step 2: Building Next.js application..."
-pnpm turbo build --filter=@agendazap/web
+pnpm turbo build --filter=@easyfyapp/web
 
 echo "📋 Step 3: Copying Prisma engine files to output..."
 cd apps/web

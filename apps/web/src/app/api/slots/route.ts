@@ -1,4 +1,4 @@
-import { prisma } from "@agendazap/database";
+import { prisma } from "@easyfyapp/database";
 import { addMinutes } from "date-fns";
 import { NextRequest, NextResponse } from "next/server";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@agendazap/ui";
+import { Button } from "@easyfyapp/ui";
 import { DeleteOrganizationDialog } from "./delete-organization-dialog";
 
 interface DeleteOrganizationButtonProps {

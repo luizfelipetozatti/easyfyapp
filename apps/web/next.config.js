@@ -4,7 +4,7 @@ const { PrismaPlugin } = require("@prisma/nextjs-monorepo-workaround-plugin");
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
-  transpilePackages: ["@agendazap/ui", "@agendazap/database"],
+  transpilePackages: ["@easyfyapp/ui", "@easyfyapp/database"],
   experimental: {
     outputFileTracingRoot: path.join(__dirname, "../../"),
   },

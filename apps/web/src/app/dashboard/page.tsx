@@ -1,10 +1,10 @@
-import { prisma } from "@agendazap/database";
+import { prisma } from "@easyfyapp/database";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
-} from "@agendazap/ui";
+} from "@easyfyapp/ui";
 
 // Force dynamic rendering (no static generation at build time)
 export const dynamic = 'force-dynamic';

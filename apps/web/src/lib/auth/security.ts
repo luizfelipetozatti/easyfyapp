@@ -1,4 +1,4 @@
-import { prisma } from "@agendazap/database";
+import { prisma } from "@easyfyapp/database";
 import { getCurrentUserOrgId, getCurrentUser } from "@/lib/auth/dashboard";
 
 /**

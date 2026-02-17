@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Input, Label } from "@agendazap/ui";
+import { Input, Label } from "@easyfyapp/ui";
 import { deactivateOrganization } from "@/app/actions/organization";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 // Importar Button com tipo específico
-import { Button, type ButtonProps } from "@agendazap/ui";
+import { Button, type ButtonProps } from "@easyfyapp/ui";
 
 interface DeleteOrganizationDialogProps {
   organizationName: string;

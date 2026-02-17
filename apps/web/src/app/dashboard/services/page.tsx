@@ -1,4 +1,4 @@
-import { prisma } from "@agendazap/database";
+import { prisma } from "@easyfyapp/database";
 import { format } from "date-fns";
 
 // Force dynamic rendering (no static generation at build time)
@@ -11,7 +11,7 @@ import {
   CardDescription,
   CardContent,
   Badge,
-} from "@agendazap/ui";
+} from "@easyfyapp/ui";
 import { Clock, DollarSign } from "lucide-react";
 
 import { getCurrentUserOrgId } from "@/lib/auth/dashboard";

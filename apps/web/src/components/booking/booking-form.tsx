@@ -14,7 +14,7 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-} from "@agendazap/ui";
+} from "@easyfyapp/ui";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MessageCircle, User, Phone, Mail, FileText } from "lucide-react";
 import { useState } from "react";

@@ -3,7 +3,7 @@
 // Recebe eventos de mensagens e status updates
 // ============================================================
 
-import { prisma } from "@agendazap/database";
+import { prisma } from "@easyfyapp/database";
 import { NextRequest, NextResponse } from "next/server";
 
 interface EvolutionWebhookPayload {

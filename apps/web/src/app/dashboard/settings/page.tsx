@@ -1,11 +1,11 @@
-import { prisma } from "@agendazap/database";
+import { prisma } from "@easyfyapp/database";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
-} from "@agendazap/ui";
+} from "@easyfyapp/ui";
 import { getCurrentUserOrgId } from "@/lib/auth/dashboard";
 import { OrganizationForm } from "./organization-form";
 import { DeleteOrganizationButton } from "./delete-organization-button";

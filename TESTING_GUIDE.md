@@ -1,4 +1,4 @@
-# 🧪 Guia de Testes - AgendaZap
+# 🧪 Guia de Testes - Easyfy
 
 Exemplos práticos para testar cada funcionalidade do sistema.
 

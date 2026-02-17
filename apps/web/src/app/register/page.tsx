@@ -11,7 +11,7 @@ import {
   CardContent,
   CardFooter,
   PhoneInput,
-} from "@agendazap/ui";
+} from "@easyfyapp/ui";
 import { Calendar } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -210,7 +210,7 @@ export default function RegisterPage() {
           </div>
           <CardTitle className="text-2xl">Criar Conta</CardTitle>
           <CardDescription>
-            Comece a usar o AgendaZap gratuitamente
+            Começe a usar o Easyfy gratuitamente
           </CardDescription>
         </CardHeader>
 

@@ -1,5 +1,5 @@
 {
-  "name": "@agendazap/ui",
+  "name": "@easyfyapp/ui",
   "version": "0.0.0",
   "private": true,
   "sideEffects": false,
@@ -34,7 +34,7 @@
     "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
-    "@agendazap/typescript-config": "workspace:*",
+    "@easyfyapp/typescript-config": "workspace:*",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "picocolors": "^1.1.1",

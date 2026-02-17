@@ -1,5 +1,5 @@
 {
-  "name": "agendazap",
+  "name": "easyfyapp",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -8,13 +8,13 @@
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
-    "vercel-build": "turbo build --filter=@agendazap/web",
+    "vercel-build": "turbo build --filter=@easyfyapp/web",
     "postinstall": "turbo db:generate || true",
     "lint": "turbo lint",
     "type-check": "turbo type-check",
     "db:generate": "turbo db:generate",
     "db:push": "turbo db:push",
-    "db:studio": "pnpm --filter @agendazap/database db:studio",
+    "db:studio": "pnpm --filter @easyfyapp/database db:studio",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "prepare": "husky"
   },

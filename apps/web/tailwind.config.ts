@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-import sharedConfig from "@agendazap/tailwind-config";
+import sharedConfig from "@easyfyapp/tailwind-config";
 
 const config: Config = {
   ...sharedConfig,

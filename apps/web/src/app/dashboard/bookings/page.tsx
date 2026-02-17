@@ -1,4 +1,4 @@
-import { prisma, BookingStatus } from "@agendazap/database";
+import { prisma, BookingStatus } from "@easyfyapp/database";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -10,7 +10,7 @@ import {
   CardTitle,
   CardContent,
   Badge,
-} from "@agendazap/ui";
+} from "@easyfyapp/ui";
 
 import { BookingStatusActions } from "./booking-actions";
 

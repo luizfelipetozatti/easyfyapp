@@ -132,7 +132,7 @@ async function sendWithResend(
         Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM_EMAIL || "noreply@agendazap.com",
+        from: process.env.RESEND_FROM_EMAIL || "noreply@easyfy.com.br",
         to: email,
         subject: `Reativação de Organização - ${organizationName}`,
         html: htmlContent,

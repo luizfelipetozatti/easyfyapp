@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Input, Label, Card, CardHeader, CardTitle, CardDescription, CardContent } from "@agendazap/ui";
+import { Button, Input, Label, Card, CardHeader, CardTitle, CardDescription, CardContent } from "@easyfyapp/ui";
 import { requestReactivation } from "@/app/actions/organization";
 
 export default function RequestReactivationPage() {

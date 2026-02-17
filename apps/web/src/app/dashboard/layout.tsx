@@ -1,4 +1,4 @@
-import { Button } from "@agendazap/ui";
+import { Button } from "@easyfyapp/ui";
 import {
   Calendar,
   LayoutDashboard,

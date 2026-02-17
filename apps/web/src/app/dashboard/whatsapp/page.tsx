@@ -4,7 +4,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from "@agendazap/ui";
+} from "@easyfyapp/ui";
 import { MessageCircle, Webhook, ExternalLink } from "lucide-react";
 
 export default function WhatsAppPage() {

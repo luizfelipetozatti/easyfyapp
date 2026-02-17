@@ -4,7 +4,7 @@
 // AgendaZap - Server Actions para Bookings
 // ============================================================
 
-import { prisma } from "@agendazap/database";
+import { prisma } from "@easyfyapp/database";
 import { addMinutes } from "date-fns";
 import { revalidatePath } from "next/cache";
 

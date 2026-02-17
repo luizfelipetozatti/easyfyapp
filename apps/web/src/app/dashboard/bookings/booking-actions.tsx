@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@agendazap/ui";
+import { Button } from "@easyfyapp/ui";
 import { Check, X, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

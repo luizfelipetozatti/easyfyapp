@@ -1,5 +1,5 @@
 {
-  "name": "@agendazap/tailwind-config",
+  "name": "@easyfyapp/tailwind-config",
   "version": "0.0.0",
   "private": true,
   "main": "./tailwind.config.ts",

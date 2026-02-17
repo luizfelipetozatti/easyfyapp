@@ -1,4 +1,4 @@
-import { prisma } from "@agendazap/database";
+import { prisma } from "@easyfyapp/database";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 

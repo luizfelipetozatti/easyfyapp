@@ -3,7 +3,7 @@
 ## Índice
 1. [O que é Evolution API](#o-que-é-evolution-api)
 2. [Instalação e Setup](#instalação-e-setup)
-3. [Configuração no AgendaZap](#configuração-no-agendazap)
+3. [Configuração no Easyfy](#configura%C3%A7%C3%A3o-no-easyfy)
 4. [Templates de Mensagem](#templates-de-mensagem)
 5. [Webhook e Eventos](#webhook-e-eventos)
 6. [Troubleshooting](#troubleshooting)
@@ -77,7 +77,7 @@ pm2 save
 
 ---
 
-## Configuração no AgendaZap
+## Configuração no Easyfy
 
 ### Passo 1: Criar Instância WhatsApp
 
@@ -90,7 +90,7 @@ curl -X POST "$EVOLUTION_URL/instance/create" \
   -H "apikey: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "instanceName": "agendazap",
+    "instanceName": "easyfy",
     "qrcode": true,
     "integration": "WHATSAPP-BAILEYS"
   }'
@@ -112,7 +112,7 @@ curl -X POST "$EVOLUTION_URL/instance/create" \
 ### Passo 2: Conectar WhatsApp
 
 **Opção A: Via Browser (mais fácil)**
-1. Acesse: `http://localhost:8080/instance/connect/agendazap`
+1. Acesse: `http://localhost:8080/instance/connect/easyfy`
 2. Abra WhatsApp no celular
 3. Toque em **⋮** (menu) → **Aparelhos conectados** → **Conectar aparelho**
 4. Escaneie QR Code mostrado no browser
@@ -121,21 +121,21 @@ curl -X POST "$EVOLUTION_URL/instance/create" \
 **Opção B: Salvar QR Code e escanear**
 ```bash
 # Buscar QR code novamente
-curl -X GET "$EVOLUTION_URL/instance/qrcode/agendazap" \
+curl -X GET "$EVOLUTION_URL/instance/qrcode/easyfy" \
   -H "apikey: $API_KEY" | jq -r '.qrcode.base64' | base64 -d > qrcode.png
 ```
 
 ### Passo 3: Verificar Conexão
 
 ```bash
-curl -X GET "$EVOLUTION_URL/instance/connectionState/agendazap" \
+curl -X GET "$EVOLUTION_URL/instance/connectionState/easyfy" \
   -H "apikey: $API_KEY"
 ```
 
 **Resposta esperada:**
 ```json
 {
-  "instance": "agendazap",
+  "instance": "easyfy",
   "state": "open"
 }
 ```
@@ -152,7 +152,7 @@ Status possíveis:
 # Desenvolvimento: Use ngrok (veja abaixo)
 WEBHOOK_URL="https://seu-dominio.vercel.app/api/webhook/whatsapp"
 
-curl -X POST "$EVOLUTION_URL/webhook/set/agendazap" \
+curl -X POST "$EVOLUTION_URL/webhook/set/easyfy" \
   -H "apikey: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -183,7 +183,7 @@ ngrok http 3000
 ```env
 EVOLUTION_API_URL=http://localhost:8080
 EVOLUTION_API_KEY=sua-chave-aqui
-EVOLUTION_INSTANCE=agendazap
+EVOLUTION_INSTANCE=easyfy
 ```
 
 ---
@@ -205,7 +205,7 @@ export function buildBookingConfirmationMessage(data: BookingMessageData): strin
     ``,
     `Pague o PIX para confirmar sua reserva.`,
     ``,
-    `_Mensagem automática - AgendaZap_`,
+    `_Mensagem automática - Easyfy_`,
   ].join("\n");
 }
 ```
@@ -225,7 +225,7 @@ Edite as funções em `whatsapp.ts`:
 
 1. Cliente envia mensagem no WhatsApp
 2. Evolution API recebe e envia POST para `/api/webhook/whatsapp`
-3. AgendaZap processa e responde automaticamente
+3. Easyfy processa e responde automaticamente
 
 ### Payload do Webhook
 
@@ -297,7 +297,7 @@ curl -X GET "$EVOLUTION_URL/instance/connectionState/agendazap" \
   -H "apikey: $API_KEY"
 
 # Se "close", reconectar
-curl -X GET "$EVOLUTION_URL/instance/connect/agendazap" \
+curl -X GET "$EVOLUTION_URL/instance/connect/easyfy" \
   -H "apikey: $API_KEY"
 # Escaneie novo QR Code
 ```
@@ -314,7 +314,7 @@ curl -X GET "$EVOLUTION_URL/instance/connect/agendazap" \
 
 2. **Testar envio manual**
 ```bash
-curl -X POST "$EVOLUTION_URL/message/sendText/agendazap" \
+curl -X POST "$EVOLUTION_URL/message/sendText/easyfy" \
   -H "apikey: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -347,7 +347,7 @@ console.log({
 
 1. **Verificar webhook configurado**
 ```bash
-curl -X GET "$EVOLUTION_URL/webhook/find/agendazap" \
+curl -X GET "$EVOLUTION_URL/webhook/find/easyfy" \
   -H "apikey: $API_KEY"
 ```
 
@@ -359,7 +359,7 @@ curl -X POST http://localhost:3000/api/webhook/whatsapp \
   -H "Content-Type: application/json" \
   -d '{
     "event": "messages.upsert",
-    "instance": "agendazap",
+    "instance": "easyfy",
     "data": {
       "key": {
         "remoteJid": "5511999999999@s.whatsapp.net",

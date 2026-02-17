@@ -5,8 +5,8 @@
 // Usa date-fns para manipulação de datas
 // ============================================================
 
-import { cn } from "@agendazap/ui";
-import { Button } from "@agendazap/ui";
+import { cn } from "@easyfyapp/ui";
+import { Button } from "@easyfyapp/ui";
 import {
   format,
   startOfMonth,

@@ -69,7 +69,7 @@ pnpm db:push
 
 ### 4.3. (Opcional) Popular Banco com Dados de Exemplo
 ```bash
-pnpm --filter @agendazap/database db:seed
+pnpm --filter @easyfyapp/database db:seed
 ```
 
 Isso cria:
@@ -249,7 +249,7 @@ pnpm db:generate
 Para dúvidas:
 - GitHub Issues: [seu-repo]/issues
 - Discord da comunidade
-- Email: contato@agendazap.com
+- Email: contato@easyfy.com.br
 
 ---
 

@@ -12,7 +12,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from "@agendazap/ui";
+} from "@easyfyapp/ui";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ArrowLeft, Check, Clock, DollarSign } from "lucide-react";

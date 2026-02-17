@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "@agendazap/database";
+import { prisma } from "@easyfyapp/database";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Spinner } from "@agendazap/ui";
+import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Spinner } from "@easyfyapp/ui";
 import { reactivateOrganization } from "@/app/actions/organization";
 
 function ReactivateContent() {

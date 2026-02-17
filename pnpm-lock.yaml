@@ -20,10 +20,10 @@ importers:
 
   apps/web:
     dependencies:
-      '@agendazap/database':
+      '@easyfyapp/database':
         specifier: workspace:*
         version: link:../../packages/database
-      '@agendazap/ui':
+      '@easyfyapp/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@hookform/resolvers':
@@ -66,13 +66,13 @@ importers:
         specifier: ^3.22.0
         version: 3.25.76
     devDependencies:
-      '@agendazap/eslint-config':
+      '@easyfyapp/eslint-config':
         specifier: workspace:*
         version: link:../../packages/config/eslint
-      '@agendazap/tailwind-config':
+      '@easyfyapp/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/config/tailwind
-      '@agendazap/typescript-config':
+      '@easyfyapp/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config/typescript
       '@prisma/nextjs-monorepo-workaround-plugin':
@@ -164,7 +164,7 @@ importers:
         specifier: ^2.45.0
         version: 2.95.3
     devDependencies:
-      '@agendazap/typescript-config':
+      '@easyfyapp/typescript-config':
         specifier: workspace:*
         version: link:../config/typescript
       '@types/node':
@@ -225,7 +225,7 @@ importers:
         specifier: ^2.2.0
         version: 2.6.1
     devDependencies:
-      '@agendazap/typescript-config':
+      '@easyfyapp/typescript-config':
         specifier: workspace:*
         version: link:../config/typescript
       '@types/react':
