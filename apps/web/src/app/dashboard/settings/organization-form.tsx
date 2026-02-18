@@ -14,6 +14,7 @@ import {
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { updateOrganization } from "@/app/actions/organization";
+import { PublicUrlSection } from "@/components/public-url-section";
 
 interface OrganizationFormProps {
   organization: {
@@ -113,10 +114,12 @@ export function OrganizationForm({ organization, appUrl }: OrganizationFormProps
                 required
               />
             </div>
-            <p className="text-xs text-muted-foreground">
-              URL pública: {appUrl}/agendar/{formData.slug}
-            </p>
           </div>
+          <PublicUrlSection
+            url={`${appUrl}/agendar/${formData.slug}`}
+            label="URL Pública de Agendamento"
+            description="Compartilhe esta URL com seus clientes para que eles possam agendar diretamente"
+          />
           <div className="space-y-2">
             <Label htmlFor="whatsapp">Número WhatsApp</Label>
             <PhoneInput
