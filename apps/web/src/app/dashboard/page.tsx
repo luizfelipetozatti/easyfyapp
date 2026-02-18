@@ -118,13 +118,13 @@ export default async function DashboardPage() {
           title="Hoje"
           value={todayBookings.toString()}
           icon={Calendar}
-          description="agendamentos hoje"
+          description="agendamentos marcados para hoje"
         />
         <StatCard
           title="Este Mês"
           value={monthBookings.toString()}
           icon={TrendingUp}
-          description="agendamentos no mês"
+          description="agendamentos marcados no mês"
         />
         <StatCard
           title="Pendentes"
