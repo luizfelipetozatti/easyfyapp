@@ -51,13 +51,13 @@ export default async function DashboardPage() {
     prisma.booking.count({
       where: {
         organizationId: orgId,
-        startTime: { gte: todayStart, lte: todayEnd },
+        createdAt: { gte: todayStart, lte: todayEnd },
       },
     }),
     prisma.booking.count({
       where: {
         organizationId: orgId,
-        startTime: { gte: monthStart, lte: monthEnd },
+        createdAt: { gte: monthStart, lte: monthEnd },
       },
     }),
     prisma.booking.count({
@@ -118,13 +118,13 @@ export default async function DashboardPage() {
           title="Hoje"
           value={todayBookings.toString()}
           icon={Calendar}
-          description="agendamentos marcados hoje"
+          description="agendamentos criados hoje"
         />
         <StatCard
           title="Este Mês"
           value={monthBookings.toString()}
           icon={TrendingUp}
-          description="agendamentos marcados no mês"
+          description="agendamentos criados no mês"
         />
         <StatCard
           title="Pendentes"
