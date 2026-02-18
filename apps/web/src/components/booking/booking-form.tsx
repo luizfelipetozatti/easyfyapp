@@ -14,11 +14,12 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
+  PhoneInput,
 } from "@easyfyapp/ui";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MessageCircle, User, Phone, Mail, FileText } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
 
 import { createBookingAction } from "@/app/actions/booking";
@@ -46,6 +47,7 @@ export function BookingForm({
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<CreateBookingInput>({
     resolver: zodResolver(createBookingSchema),
@@ -127,10 +129,18 @@ export function BookingForm({
             <Label htmlFor="clientPhone" className="flex items-center gap-1">
               <Phone className="h-3.5 w-3.5" /> WhatsApp
             </Label>
-            <Input
-              id="clientPhone"
-              placeholder="5511999999999"
-              {...register("clientPhone")}
+            <Controller
+              name="clientPhone"
+              control={control}
+              render={({ field }) => (
+                <PhoneInput
+                  id="clientPhone"
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={isSubmitting}
+                  defaultCountry="BR"
+                />
+              )}
             />
             {errors.clientPhone && (
               <p className="text-xs text-destructive">
@@ -138,7 +148,7 @@ export function BookingForm({
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              Formato: código do país + DDD + número (ex: 5511999999999)
+              Número com código internacional (ex: +55 11 99999-9999)
             </p>
           </div>
 
