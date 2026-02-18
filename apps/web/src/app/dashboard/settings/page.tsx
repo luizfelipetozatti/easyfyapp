@@ -36,7 +36,6 @@ export default async function SettingsPage() {
             slug: org.slug,
             whatsappNumber: org.whatsappNumber,
           }}
-          appUrl={process.env.NEXT_PUBLIC_APP_URL ?? ""}
         />
       )}
 

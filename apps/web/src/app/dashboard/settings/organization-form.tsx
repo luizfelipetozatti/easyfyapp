@@ -22,16 +22,19 @@ interface OrganizationFormProps {
     slug: string;
     whatsappNumber: string | null;
   };
-  appUrl: string;
 }
 
-export function OrganizationForm({ organization, appUrl }: OrganizationFormProps) {
+export function OrganizationForm({ organization }: OrganizationFormProps) {
   const [isPending, startTransition] = useTransition();
   const [formData, setFormData] = useState({
     name: organization.name,
     slug: organization.slug,
     whatsappNumber: organization.whatsappNumber ?? "",
   });
+
+  // URL base da aplicação
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
+    (typeof window !== 'undefined' ? window.location.origin : 'https://easyfyapp-web.vercel.app');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
