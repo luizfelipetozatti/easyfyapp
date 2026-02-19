@@ -536,7 +536,7 @@ export async function getAvailableDaysForMonthAction(
 
       // Filtro 3: Não é dia de trabalho (usar UTC day-of-week)
       const dateObj = new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
-      const dayEnum = JS_DAY_TO_ENUM[dateObj.getUTCDay()];
+      const dayEnum = JS_DAY_TO_ENUM[dateObj.getUTCDay()] as any;
       const workingHours = workingHoursMap.get(dayEnum);
       if (!workingHours?.isWorking) continue;
 
