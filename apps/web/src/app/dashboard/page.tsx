@@ -8,7 +8,6 @@ import {
 
 // Force dynamic rendering (no static generation at build time)
 export const dynamic = 'force-dynamic';
-import { startOfDay, endOfDay, startOfMonth, endOfMonth } from "date-fns";
 import {
   Calendar,
   CheckCircle,
@@ -19,38 +18,6 @@ import {
 } from "lucide-react";
 import { getCurrentUserOrgId } from "@/lib/auth/dashboard";
 import { formatPhoneNumber } from "@/lib/phone-formatter";
-
-// Helper para converter UTC para timezone específico
-function getDateInTimezone(date: Date, timezoneName: string): Date {
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    timeZone: timezoneName,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  });
-  
-  const parts = formatter.formatToParts(date);
-  const values: Record<string, number> = {};
-  
-  for (const part of parts) {
-    if (part.type !== "literal") {
-      values[part.type] = parseInt(part.value, 10);
-    }
-  }
-  
-  return new Date(
-    values.year,
-    values.month - 1,
-    values.day,
-    values.hour,
-    values.minute,
-    values.second
-  );
-}
 
 export default async function DashboardPage() {
   const orgId = await getCurrentUserOrgId();
@@ -81,15 +48,25 @@ export default async function DashboardPage() {
     );
   }
 
-  // Obter hora atual convertida para timezone da organização
+  // Obter hora atual em UTC
   const utcNow = new Date();
-  const zonedNow = getDateInTimezone(utcNow, organization.timezone);
-  
-  // Calcular início e fim do dia baseado no timezone da organização
-  const todayStart = startOfDay(zonedNow);
-  const todayEnd = endOfDay(zonedNow);
-  const monthStart = startOfMonth(zonedNow);
-  const monthEnd = endOfMonth(zonedNow);
+
+  const todayStartUtc = new Date(
+    Date.UTC(utcNow.getUTCFullYear(), utcNow.getUTCMonth(), utcNow.getUTCDate())
+  );
+  const todayEndUtc = new Date(
+    Date.UTC(
+      utcNow.getUTCFullYear(),
+      utcNow.getUTCMonth(),
+      utcNow.getUTCDate() + 1
+    )
+  );
+  const monthStartUtc = new Date(
+    Date.UTC(utcNow.getUTCFullYear(), utcNow.getUTCMonth(), 1)
+  );
+  const monthEndUtc = new Date(
+    Date.UTC(utcNow.getUTCFullYear(), utcNow.getUTCMonth() + 1, 1)
+  );
 
   // Stats paralelos
   const [
@@ -104,13 +81,13 @@ export default async function DashboardPage() {
     prisma.booking.count({
       where: {
         organizationId: orgId,
-        createdAt: { gte: todayStart, lte: todayEnd },
+        createdAt: { gte: todayStartUtc, lt: todayEndUtc },
       },
     }),
     prisma.booking.count({
       where: {
         organizationId: orgId,
-        createdAt: { gte: monthStart, lte: monthEnd },
+        createdAt: { gte: monthStartUtc, lt: monthEndUtc },
       },
     }),
     prisma.booking.count({
@@ -129,7 +106,7 @@ export default async function DashboardPage() {
       where: {
         organizationId: orgId,
         status: "CONCLUIDO",
-        startTime: { gte: monthStart, lte: monthEnd },
+        startTime: { gte: monthStartUtc, lt: monthEndUtc },
       },
       include: { service: { select: { price: true } } },
     }),
@@ -148,7 +125,7 @@ export default async function DashboardPage() {
   const upcomingToday = await prisma.booking.findMany({
     where: {
       organizationId: orgId,
-      startTime: { gte: utcNow, lte: todayEnd },
+      startTime: { gte: utcNow, lt: todayEndUtc },
       status: { in: ["PENDENTE", "CONFIRMADO"] },
     },
     include: { service: true },
