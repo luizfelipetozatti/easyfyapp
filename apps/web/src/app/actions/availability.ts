@@ -131,7 +131,8 @@ export async function getAvailabilityConfig() {
       },
     } as const;
   } catch (error) {
-    console.error("Erro ao buscar configuração de disponibilidade:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Erro ao buscar configuração de disponibilidade:", errorMessage);
     return {
       success: false,
       error: "Erro ao buscar configuração de disponibilidade",
@@ -235,7 +236,8 @@ export async function updateWorkingHours(
       message: "Horários de trabalho atualizados com sucesso!",
     };
   } catch (error) {
-    console.error("Erro ao atualizar horários de trabalho:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Erro ao atualizar horários de trabalho:", errorMessage);
 
     if (error instanceof z.ZodError) {
       const firstError = error.errors[0];
@@ -298,7 +300,8 @@ export async function updateBreakTime(
       message: "Intervalo de almoço atualizado com sucesso!",
     };
   } catch (error) {
-    console.error("Erro ao atualizar intervalo de almoço:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Erro ao atualizar intervalo de almoço:", errorMessage);
 
     if (error instanceof z.ZodError) {
       const firstError = error.errors[0];
@@ -371,7 +374,8 @@ export async function addUnavailableDay(
       message: "Dia indisponível adicionado com sucesso!",
     };
   } catch (error) {
-    console.error("Erro ao adicionar dia indisponível:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Erro ao adicionar dia indisponível:", errorMessage);
 
     if (error instanceof z.ZodError) {
       const firstError = error.errors[0];
@@ -436,7 +440,8 @@ export async function removeUnavailableDay(
       message: "Dia indisponível removido com sucesso!",
     };
   } catch (error) {
-    console.error("Erro ao remover dia indisponível:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Erro ao remover dia indisponível:", errorMessage);
 
     if (error instanceof Error) {
       return {
