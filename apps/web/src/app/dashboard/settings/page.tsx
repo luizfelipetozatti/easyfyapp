@@ -9,6 +9,7 @@ import {
 import { getCurrentUserOrgId } from "@/lib/auth/dashboard";
 import { OrganizationForm } from "./organization-form";
 import { DeleteOrganizationButton } from "./delete-organization-button";
+import { AvailabilityConfigServer } from "@/components/availability/availability-config-server";
 
 // Force dynamic rendering (no static generation at build time)
 export const dynamic = 'force-dynamic';
@@ -36,9 +37,21 @@ export default async function SettingsPage() {
             slug: org.slug,
             whatsappNumber: org.whatsappNumber,
           }}
-          appUrl={process.env.NEXT_PUBLIC_APP_URL ?? ""}
         />
       )}
+
+      {/* Disponibilidade */}
+      <div>
+        <div className="mb-1">
+          <h2 className="text-xl font-semibold">Disponibilidade</h2>
+          <p className="text-sm text-muted-foreground">
+            Gerencie os horários e dias disponíveis para agendamentos
+          </p>
+        </div>
+        <div className="mt-4">
+          <AvailabilityConfigServer />
+        </div>
+      </div>
 
       {/* Danger Zone */}
       <Card className="border-destructive">

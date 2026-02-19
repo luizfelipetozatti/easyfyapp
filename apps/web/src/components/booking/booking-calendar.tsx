@@ -33,14 +33,20 @@ interface BookingCalendarProps {
   onSelectSlot: (slot: string) => void;
   /** Callback quando o dia muda (para buscar novos slots) */
   onDateChange: (date: string) => void;
+  /** Callback quando o mês muda (para buscar dias com slots) */
+  onMonthChange?: (year: number, month: number) => void;
   /** Slot atualmente selecionado */
   selectedSlot?: string | null;
   /** Duração do serviço em minutos (para exibir) */
   durationMinutes?: number;
   /** Estado de loading */
   isLoading?: boolean;
-  /** Datas desabilitadas (ex: dias sem funcionamento) */
+  /** Números JS (0=Dom…6=Sáb) dos dias fixos que não são dia de trabalho */
+  nonWorkingDayNumbers?: number[];
+  /** Datas específicas bloqueadas (ex: feriados, férias) */
   disabledDates?: Date[];
+  /** Dias com slots disponíveis no mês (YYYY-MM-DD) - se vazio, desabilita dias sem agendamentos */
+  availableDaysForMonth?: string[];
 }
 
 const WEEKDAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -49,13 +55,28 @@ export function BookingCalendar({
   availableSlots,
   onSelectSlot,
   onDateChange,
+  onMonthChange,
   selectedSlot,
   durationMinutes = 30,
   isLoading = false,
+  nonWorkingDayNumbers = [],
   disabledDates = [],
+  availableDaysForMonth = [],
 }: BookingCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  // Converter disabledDates para strings YYYY-MM-DD para comparação robusta (sem timezone issues)
+  const disabledDateStrings = useMemo(
+    () =>
+      disabledDates.map((d) => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }),
+    [disabledDates]
+  );
 
   // Gerar dias do calendário
   const calendarDays = useMemo(() => {
@@ -73,9 +94,18 @@ export function BookingCalendar({
     return days;
   }, [currentMonth]);
 
-  // Navegar entre meses
-  const goToPrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
-  const goToNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+  // Navegar entre meses com callback
+  const goToPrevMonth = () => {
+    const newMonth = subMonths(currentMonth, 1);
+    setCurrentMonth(newMonth);
+    onMonthChange?.(newMonth.getFullYear(), newMonth.getMonth() + 1);
+  };
+
+  const goToNextMonth = () => {
+    const newMonth = addMonths(currentMonth, 1);
+    setCurrentMonth(newMonth);
+    onMonthChange?.(newMonth.getFullYear(), newMonth.getMonth() + 1);
+  };
 
   // Selecionar dia
   const handleDayClick = (day: Date) => {
@@ -88,19 +118,28 @@ export function BookingCalendar({
 
   // Verificar se dia está desabilitado
   const isDayDisabled = (day: Date) => {
-    // Domingos desabilitados por padrão
-    if (day.getDay() === 0) return true;
-    return disabledDates.some((d) => isSameDay(d, day));
+    // Dias fixos de não-trabalho configurados pela org
+    if (nonWorkingDayNumbers.includes(day.getDay())) return true;
+    // Datas específicas bloqueadas - comparar como string para evitar timezone issues
+    const dayString = format(day, "yyyy-MM-dd");
+    if (disabledDateStrings.includes(dayString)) return true;
+    // Se tem lista de dias com slots, desabilita dias que não estão nela
+    if (availableDaysForMonth.length > 0) {
+      return !availableDaysForMonth.includes(dayString);
+    }
+    return false;
   };
 
   // Agrupar slots por período
+  // Usar getUTCHours() pois os slots são gerados como UTC nominal
+  // (ex: "08:00" de trabalho → "...T08:00:00.000Z", exibir como 08:00 local)
   const groupedSlots = useMemo(() => {
     const morning: string[] = [];
     const afternoon: string[] = [];
     const evening: string[] = [];
 
     availableSlots.forEach((slot) => {
-      const hour = new Date(slot).getHours();
+      const hour = new Date(slot).getUTCHours();
       if (hour < 12) morning.push(slot);
       else if (hour < 18) afternoon.push(slot);
       else evening.push(slot);
@@ -291,7 +330,8 @@ function SlotGroup({
                 isActive && "ring-2 ring-primary ring-offset-2"
               )}
             >
-              {format(new Date(slot), "HH:mm")}
+              {/* getUTCHours/Minutes: slots são gerados como UTC nominal (08:00 UTC = 08:00 local da org) */}
+              {String(new Date(slot).getUTCHours()).padStart(2, "0")}:{String(new Date(slot).getUTCMinutes()).padStart(2, "0")}
             </Button>
           );
         })}

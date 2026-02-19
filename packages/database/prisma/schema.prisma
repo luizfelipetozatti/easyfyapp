@@ -60,9 +60,13 @@ model Organization {
   updatedAt           DateTime           @updatedAt @map("updated_at")
 
   // Relations
-  members  OrganizationMember[]
-  services Service[]
-  bookings Booking[]
+  members          OrganizationMember[]
+  services         Service[]
+  bookings         Booking[]
+  workingHours     WorkingHours[]
+  breakTime        BreakTime[]
+  unavailableDays  UnavailableDay[]
+  fullyBookedDays  FullyBookedDay[]
 
   @@map("organizations")
 }
@@ -117,8 +121,9 @@ model Service {
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   // Relations
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  bookings     Booking[]
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  bookings        Booking[]
+  fullyBookedDays FullyBookedDay[]
 
   @@index([organizationId])
   @@map("services")
@@ -151,4 +156,90 @@ model Booking {
   @@index([organizationId, startTime])
   @@index([organizationId, status])
   @@map("bookings")
+}
+
+// ============================================================
+// AVAILABILITY (Disponibilidade de agendamentos)
+// ============================================================
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+model WorkingHours {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  dayOfWeek      DayOfWeek
+  startTime      String   @map("start_time") // HH:mm (ex: "08:00")
+  endTime        String   @map("end_time")   // HH:mm (ex: "17:00")
+  isWorking      Boolean  @default(true) @map("is_working")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, dayOfWeek])
+  @@index([organizationId])
+  @@map("working_hours")
+}
+
+model BreakTime {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  startTime      String   @map("start_time") // HH:mm (ex: "12:00")
+  endTime        String   @map("end_time")   // HH:mm (ex: "13:00")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId])
+  @@index([organizationId])
+  @@map("break_times")
+}
+
+model UnavailableDay {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  date           DateTime @db.Date // Data específica
+  reason         String?  // Motivo (férias, feriado, etc)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, date])
+  @@index([organizationId])
+  @@map("unavailable_days")
+}
+
+// ============================================================
+// FULLY BOOKED DAYS (Cache materializado de dias lotados)
+// Sinaliza quando TODOS os slots de um dia/serviço estão ocupados.
+// Atualizado automaticamente a cada booking criado/cancelado.
+// ============================================================
+
+model FullyBookedDay {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  serviceId      String   @map("service_id") @db.Uuid
+  date           DateTime @db.Date
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  service      Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, serviceId, date])
+  @@index([organizationId, serviceId])
+  @@index([organizationId, date])
+  @@map("fully_booked_days")
 }

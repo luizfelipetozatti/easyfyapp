@@ -29,6 +29,9 @@ export type Organization = Prisma.OrganizationGetPayload<object>;
 export type OrganizationMember = Prisma.OrganizationMemberGetPayload<object>;
 export type Service = Prisma.ServiceGetPayload<object>;
 export type Booking = Prisma.BookingGetPayload<object>;
+export type WorkingHours = Prisma.WorkingHoursGetPayload<object>;
+export type BreakTime = Prisma.BreakTimeGetPayload<object>;
+export type UnavailableDay = Prisma.UnavailableDayGetPayload<object>;
 
 // Re-export enums as const objects
 export const UserRole = {
@@ -44,8 +47,19 @@ export const BookingStatus = {
   CONCLUIDO: "CONCLUIDO",
 } as const;
 
+export const DayOfWeek = {
+  MONDAY: "MONDAY",
+  TUESDAY: "TUESDAY",
+  WEDNESDAY: "WEDNESDAY",
+  THURSDAY: "THURSDAY",
+  FRIDAY: "FRIDAY",
+  SATURDAY: "SATURDAY",
+  SUNDAY: "SUNDAY",
+} as const;
+
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus];
+export type DayOfWeek = (typeof DayOfWeek)[keyof typeof DayOfWeek];
 
 // Re-export Prisma namespace and PrismaClient
 export type { Prisma };

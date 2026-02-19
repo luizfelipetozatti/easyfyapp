@@ -13,12 +13,11 @@ import {
   CardDescription,
   CardContent,
 } from "@easyfyapp/ui";
-import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ArrowLeft, Check, Clock, DollarSign } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 
-import { getAvailableSlotsAction } from "@/app/actions/booking";
+import { getAvailableSlotsAction, getAvailableDaysForMonthAction } from "@/app/actions/booking";
 import { BookingCalendar } from "@/components/booking/booking-calendar";
 import { BookingForm } from "@/components/booking/booking-form";
 
@@ -38,6 +37,10 @@ interface BookingPageClientProps {
     timezone: string;
   };
   services: ServiceData[];
+  /** Números JS (0=Dom…6=Sáb) dos dias em que a org NÃO trabalha */
+  nonWorkingDayNumbers: number[];
+  /** Datas específicas bloqueadas no formato YYYY-MM-DD */
+  unavailableDates: string[];
 }
 
 type Step = "service" | "datetime" | "form" | "success";
@@ -45,7 +48,16 @@ type Step = "service" | "datetime" | "form" | "success";
 export function BookingPageClient({
   organization,
   services,
+  nonWorkingDayNumbers,
+  unavailableDates,
 }: BookingPageClientProps) {
+  // Converter strings YYYY-MM-DD → Date[] para o calendário com timezone correto
+  // Parse em timezone LOCAL para evitar problemas de offset
+  const disabledDates = unavailableDates.map((d) => {
+    const [year, month, day] = d.split("-").map(Number);
+    return new Date(year, month - 1, day, 0, 0, 0, 0);
+  });
+
   const [step, setStep] = useState<Step>("service");
   const [selectedService, setSelectedService] = useState<ServiceData | null>(
     null
@@ -53,6 +65,10 @@ export function BookingPageClient({
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [availableDaysForMonth, setAvailableDaysForMonth] = useState<string[]>(
+    []
+  );
+  const [isLoadingDays, setIsLoadingDays] = useState(false);
 
   // Buscar slots quando o dia muda
   const handleDateChange = useCallback(
@@ -78,11 +94,40 @@ export function BookingPageClient({
     [organization.id, selectedService]
   );
 
+  // Buscar quais dias do mês têm slots disponíveis
+  const handleMonthChange = useCallback(
+    async (year: number, month: number) => {
+      if (!selectedService) return;
+      setIsLoadingDays(true);
+
+      const result = await getAvailableDaysForMonthAction(
+        organization.id,
+        selectedService.id,
+        year,
+        month
+      );
+
+      if (result.success) {
+        setAvailableDaysForMonth(result.availableDays);
+      } else {
+        setAvailableDaysForMonth([]);
+      }
+
+      setIsLoadingDays(false);
+    },
+    [organization.id, selectedService]
+  );
+
   const handleSelectService = (service: ServiceData) => {
     setSelectedService(service);
     setStep("datetime");
     setSelectedSlot(null);
     setAvailableSlots([]);
+    setAvailableDaysForMonth([]);
+
+    // Buscar dias com slots para o mês atual
+    const now = new Date();
+    handleMonthChange(now.getFullYear(), now.getMonth() + 1);
   };
 
   const handleSelectSlot = (slot: string) => {
@@ -181,16 +226,20 @@ export function BookingPageClient({
           availableSlots={availableSlots}
           onSelectSlot={handleSelectSlot}
           onDateChange={handleDateChange}
+          onMonthChange={handleMonthChange}
           selectedSlot={selectedSlot}
           durationMinutes={selectedService?.durationMinutes}
-          isLoading={isLoadingSlots}
+          isLoading={isLoadingSlots || isLoadingDays}
+          nonWorkingDayNumbers={nonWorkingDayNumbers}
+          disabledDates={disabledDates}
+          availableDaysForMonth={availableDaysForMonth}
         />
 
         {selectedSlot && (
           <div className="mt-6 flex justify-end">
             <Button size="lg" onClick={handleConfirmSlot} className="gap-2">
               Continuar com{" "}
-              {format(new Date(selectedSlot), "HH:mm")}
+              {String(new Date(selectedSlot).getUTCHours()).padStart(2, "0")}:{String(new Date(selectedSlot).getUTCMinutes()).padStart(2, "0")}
               <ArrowLeft className="h-4 w-4 rotate-180" />
             </Button>
           </div>
@@ -213,9 +262,15 @@ export function BookingPageClient({
             <h2 className="text-2xl font-bold">Seus dados</h2>
             <p className="text-sm text-muted-foreground">
               {selectedService.name} •{" "}
-              {format(new Date(selectedSlot), "dd/MM/yyyy 'às' HH:mm", {
-                locale: ptBR,
-              })}
+              {(() => {
+                const d = new Date(selectedSlot);
+                const day = String(d.getUTCDate()).padStart(2, "0");
+                const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+                const year = d.getUTCFullYear();
+                const h = String(d.getUTCHours()).padStart(2, "0");
+                const m = String(d.getUTCMinutes()).padStart(2, "0");
+                return `${day}/${month}/${year} às ${h}:${m}`;
+              })()}
             </p>
           </div>
         </div>
@@ -256,11 +311,15 @@ export function BookingPageClient({
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Data/Hora</span>
                   <span className="font-medium">
-                    {format(
-                      new Date(selectedSlot),
-                      "dd/MM/yyyy 'às' HH:mm",
-                      { locale: ptBR }
-                    )}
+                    {(() => {
+                      const d = new Date(selectedSlot);
+                      const day = String(d.getUTCDate()).padStart(2, "0");
+                      const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+                      const year = d.getUTCFullYear();
+                      const h = String(d.getUTCHours()).padStart(2, "0");
+                      const m = String(d.getUTCMinutes()).padStart(2, "0");
+                      return `${day}/${month}/${year} às ${h}:${m}`;
+                    })()}
                   </span>
                 </div>
                 <div className="flex justify-between">
