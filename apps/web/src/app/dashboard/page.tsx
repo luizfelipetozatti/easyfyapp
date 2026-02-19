@@ -19,6 +19,38 @@ import {
 } from "lucide-react";
 import { getCurrentUserOrgId } from "@/lib/auth/dashboard";
 
+// Helper para converter UTC para timezone específico
+function getDateInTimezone(date: Date, timezoneName: string): Date {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: timezoneName,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  
+  const parts = formatter.formatToParts(date);
+  const values: Record<string, number> = {};
+  
+  for (const part of parts) {
+    if (part.type !== "literal") {
+      values[part.type] = parseInt(part.value, 10);
+    }
+  }
+  
+  return new Date(
+    values.year,
+    values.month - 1,
+    values.day,
+    values.hour,
+    values.minute,
+    values.second
+  );
+}
+
 export default async function DashboardPage() {
   const orgId = await getCurrentUserOrgId();
 
@@ -32,11 +64,31 @@ export default async function DashboardPage() {
     );
   }
 
-  const now = new Date();
-  const todayStart = startOfDay(now);
-  const todayEnd = endOfDay(now);
-  const monthStart = startOfMonth(now);
-  const monthEnd = endOfMonth(now);
+  // Buscar organização com timezone
+  const organization = await prisma.organization.findUnique({
+    where: { id: orgId },
+    select: { timezone: true },
+  });
+
+  if (!organization) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <p className="text-muted-foreground">
+          Organização não encontrada.
+        </p>
+      </div>
+    );
+  }
+
+  // Obter hora atual convertida para timezone da organização
+  const utcNow = new Date();
+  const zonedNow = getDateInTimezone(utcNow, organization.timezone);
+  
+  // Calcular início e fim do dia baseado no timezone da organização
+  const todayStart = startOfDay(zonedNow);
+  const todayEnd = endOfDay(zonedNow);
+  const monthStart = startOfMonth(zonedNow);
+  const monthEnd = endOfMonth(zonedNow);
 
   // Stats paralelos
   const [
@@ -95,7 +147,7 @@ export default async function DashboardPage() {
   const upcomingToday = await prisma.booking.findMany({
     where: {
       organizationId: orgId,
-      startTime: { gte: now, lte: todayEnd },
+      startTime: { gte: utcNow, lte: todayEnd },
       status: { in: ["PENDENTE", "CONFIRMADO"] },
     },
     include: { service: true },
