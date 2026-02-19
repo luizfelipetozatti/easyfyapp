@@ -29,7 +29,7 @@ async function getDayAvailabilityInfo(organizationId: string, date: string) {
   const dayIndex = new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0)).getUTCDay();
   const dayEnum = JS_DAY_TO_ENUM[dayIndex];
 
-  const [workingHours, breakTime, unavailableDay] = await Promise.all([
+  const [workingHours, breakTimes, unavailableDay] = await Promise.all([
     prisma.workingHours.findUnique({
       where: {
         organizationId_dayOfWeek: {
@@ -38,7 +38,10 @@ async function getDayAvailabilityInfo(organizationId: string, date: string) {
         },
       },
     }),
-    prisma.breakTime.findFirst({ where: { organizationId } }),
+    prisma.breakTime.findMany({
+      where: { organizationId },
+      orderBy: { startTime: "asc" },
+    }),
     // UnavailableDay é @db.Date (UTC midnight) — buscar com UTC midnight
     prisma.unavailableDay.findFirst({
       where: {
@@ -48,7 +51,7 @@ async function getDayAvailabilityInfo(organizationId: string, date: string) {
     }),
   ]);
 
-  return { workingHours, breakTime, unavailableDay, dayEnum };
+  return { workingHours, breakTimes, unavailableDay, dayEnum };
 }
 
 // ============================================================
@@ -59,11 +62,11 @@ interface GenerateSlotsParams {
   date: string; // YYYY-MM-DD
   durationMinutes: number;
   workingHours: { startTime: string; endTime: string } | null;
-  breakTime: { startTime: string; endTime: string } | null;
+  breakTimes: { startTime: string; endTime: string }[];
 }
 
 function generateDaySlots(params: GenerateSlotsParams): string[] {
-  const { date, durationMinutes, workingHours, breakTime } = params;
+  const { date, durationMinutes, workingHours, breakTimes } = params;
 
   if (!workingHours || !workingHours.startTime) return [];
 
@@ -72,19 +75,18 @@ function generateDaySlots(params: GenerateSlotsParams): string[] {
 
   // Usar Date.UTC para que os horários de trabalho sejam interpretados como
   // horários nominais independentes de timezone do servidor.
-  // Isso garante que "14:00" sempre gera o mesmo timestamp UTC em qualquer ambiente.
   const [year, month, day] = date.split("-").map(Number);
   const workEnd = new Date(Date.UTC(year, month - 1, day, endHour, endMin, 0, 0));
 
-  // Intervalo/pausa configurado
-  let breakStart: Date | null = null;
-  let breakEnd: Date | null = null;
-  if (breakTime) {
-    const [bsh, bsm] = breakTime.startTime.split(":").map(Number);
-    const [beh, bem] = breakTime.endTime.split(":").map(Number);
-    breakStart = new Date(Date.UTC(year, month - 1, day, bsh, bsm, 0, 0));
-    breakEnd = new Date(Date.UTC(year, month - 1, day, beh, bem, 0, 0));
-  }
+  // Pré-computar intervalos de pausa como objetos Date
+  const breakIntervals = breakTimes.map((b) => {
+    const [bsh, bsm] = b.startTime.split(":").map(Number);
+    const [beh, bem] = b.endTime.split(":").map(Number);
+    return {
+      start: new Date(Date.UTC(year, month - 1, day, bsh, bsm, 0, 0)),
+      end: new Date(Date.UTC(year, month - 1, day, beh, bem, 0, 0)),
+    };
+  });
 
   // Gerar todos os slots possíveis
   const slots: string[] = [];
@@ -96,12 +98,10 @@ function generateDaySlots(params: GenerateSlotsParams): string[] {
 
     if (slotEnd > workEnd) break;
 
-    // Não sobrepõe intervalo de pausa
-    const overlapBreak =
-      breakStart &&
-      breakEnd &&
-      slotStart < breakEnd &&
-      slotEnd > breakStart;
+    // Filtrar slots que se sobrepõem a qualquer intervalo de pausa
+    const overlapBreak = breakIntervals.some(
+      (b) => slotStart < b.end && slotEnd > b.start
+    );
 
     if (!overlapBreak) {
       slots.push(slotStart.toISOString());
@@ -135,7 +135,7 @@ async function refreshFullyBookedStatus(
     if (!service) return;
 
     // Buscar info do dia
-    const { workingHours, breakTime, unavailableDay } =
+    const { workingHours, breakTimes, unavailableDay } =
       await getDayAvailabilityInfo(organizationId, date);
 
     // Se dia não é de trabalho ou está bloqueado → remover cache se existir
@@ -151,7 +151,7 @@ async function refreshFullyBookedStatus(
       date,
       durationMinutes: service.durationMinutes,
       workingHours,
-      breakTime,
+      breakTimes,
     });
 
     if (allSlots.length === 0) return;
@@ -405,8 +405,8 @@ export async function getAvailableSlotsAction(
 
     const durationMinutes = service.durationMinutes;
 
-    // Buscar info do dia (workingHours, breakTime, unavailableDay)
-    const { workingHours, breakTime, unavailableDay } =
+    // Buscar info do dia (workingHours, breakTimes, unavailableDay)
+    const { workingHours, breakTimes, unavailableDay } =
       await getDayAvailabilityInfo(organizationId, date);
 
     // Dia não é dia de trabalho ou está bloqueado especificamente
@@ -423,7 +423,7 @@ export async function getAvailableSlotsAction(
       date,
       durationMinutes,
       workingHours,
-      breakTime,
+      breakTimes,
     });
 
     // Filtrar slots ocupados — usar janela UTC do dia completo
