@@ -15,6 +15,7 @@ import {
 import { BookingStatusActions } from "./booking-actions";
 
 import { getCurrentUserOrgId } from "@/lib/auth/dashboard";
+import { formatPhoneNumber } from "@/lib/phone-formatter";
 
 const statusConfig: Record<BookingStatus, { label: string; variant: "warning" | "success" | "destructive" | "secondary" }> = {
   PENDENTE: { label: "Pendente", variant: "warning" as const },
@@ -75,7 +76,7 @@ export default async function BookingsPage() {
                               {booking.clientName}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {booking.clientPhone}
+                              {formatPhoneNumber(booking.clientPhone)}
                             </p>
                           </div>
                         </td>

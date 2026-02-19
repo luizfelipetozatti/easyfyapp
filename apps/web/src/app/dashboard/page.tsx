@@ -18,6 +18,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import { getCurrentUserOrgId } from "@/lib/auth/dashboard";
+import { formatPhoneNumber } from "@/lib/phone-formatter";
 
 // Helper para converter UTC para timezone específico
 function getDateInTimezone(date: Date, timezoneName: string): Date {
@@ -271,7 +272,7 @@ export default async function DashboardPage() {
                       })}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {booking.clientPhone}
+                      {formatPhoneNumber(booking.clientPhone)}
                     </p>
                   </div>
                 </div>
