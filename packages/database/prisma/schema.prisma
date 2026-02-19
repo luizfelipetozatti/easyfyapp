@@ -193,6 +193,7 @@ model WorkingHours {
 model BreakTime {
   id             String   @id @default(uuid()) @db.Uuid
   organizationId String   @map("organization_id") @db.Uuid
+  label          String?  // Descrição do intervalo (ex: "Almoço", "Buscar filhos")
   startTime      String   @map("start_time") // HH:mm (ex: "12:00")
   endTime        String   @map("end_time")   // HH:mm (ex: "13:00")
   createdAt      DateTime @default(now()) @map("created_at")
@@ -201,7 +202,6 @@ model BreakTime {
   // Relations
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@unique([organizationId])
   @@index([organizationId])
   @@map("break_times")
 }

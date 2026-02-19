@@ -77,12 +77,13 @@ const updateWorkingHoursSchema = z.object({
   { message: "A hora de término deve ser posterior à hora de início" }
 );
 
-const updateBreakTimeSchema = z.object({
+const addBreakTimeSchema = z.object({
+  label: z.string().optional(),
   startTime: z.string().time("HH:mm"),
   endTime: z.string().time("HH:mm"),
 }).refine(
   (data) => data.startTime < data.endTime,
-  { message: "A hora de término do intervalo deve ser posterior à hora de início" }
+  { message: "A hora de término deve ser posterior à hora de início" }
 );
 
 const addUnavailableDaySchema = z.object({
@@ -108,13 +109,14 @@ export async function getAvailabilityConfig() {
   try {
     const orgId = await getOrgIdAsync();
 
-    const [workingHours, breakTime, unavailableDays] = await Promise.all([
+    const [workingHours, breakTimes, unavailableDays] = await Promise.all([
       prisma.workingHours.findMany({
         where: { organizationId: orgId },
         orderBy: { dayOfWeek: "asc" },
       }),
-      prisma.breakTime.findFirst({
+      prisma.breakTime.findMany({
         where: { organizationId: orgId },
+        orderBy: { startTime: "asc" },
       }),
       prisma.unavailableDay.findMany({
         where: { organizationId: orgId },
@@ -126,7 +128,7 @@ export async function getAvailabilityConfig() {
       success: true,
       data: {
         workingHours,
-        breakTime,
+        breakTimes,
         unavailableDays,
       },
     } as const;
@@ -262,32 +264,42 @@ export async function updateWorkingHours(
 }
 
 // ============================================================
-// UPDATE BREAK TIME
+// ADD BREAK TIME
 // ============================================================
 
-export async function updateBreakTime(
+export async function addBreakTime(
   _prevState: AvailabilityResponse,
   formData: FormData
 ): Promise<AvailabilityResponse> {
   try {
     const orgId = await getOrgIdAsync();
 
-    const startTime = String(formData.get("breakStartTime"));
-    const endTime = String(formData.get("breakEndTime"));
-
-    const validatedData = updateBreakTimeSchema.parse({
-      startTime,
-      endTime,
+    const validatedData = addBreakTimeSchema.parse({
+      label: formData.get("label") ? String(formData.get("label")) : undefined,
+      startTime: String(formData.get("startTime")),
+      endTime: String(formData.get("endTime")),
     });
 
-    await prisma.breakTime.upsert({
+    // Verificar sobreposição com intervalos existentes
+    const existing = await prisma.breakTime.findMany({
       where: { organizationId: orgId },
-      update: {
-        startTime: validatedData.startTime,
-        endTime: validatedData.endTime,
-      },
-      create: {
+    });
+
+    const hasOverlap = existing.some(
+      (b) => validatedData.startTime < b.endTime && validatedData.endTime > b.startTime
+    );
+
+    if (hasOverlap) {
+      return {
+        success: false,
+        error: "Este horário se sobrepõe a um intervalo já cadastrado",
+      };
+    }
+
+    await prisma.breakTime.create({
+      data: {
         organizationId: orgId,
+        label: validatedData.label || null,
         startTime: validatedData.startTime,
         endTime: validatedData.endTime,
       },
@@ -297,11 +309,11 @@ export async function updateBreakTime(
 
     return {
       success: true,
-      message: "Intervalo de almoço atualizado com sucesso!",
+      message: "Intervalo adicionado com sucesso!",
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("Erro ao atualizar intervalo de almoço:", errorMessage);
+    console.error("Erro ao adicionar intervalo:", errorMessage);
 
     if (error instanceof z.ZodError) {
       const firstError = error.errors[0];
@@ -312,16 +324,46 @@ export async function updateBreakTime(
     }
 
     if (error instanceof Error) {
-      return {
-        success: false,
-        error: error.message,
-      };
+      return { success: false, error: error.message };
     }
 
-    return {
-      success: false,
-      error: "Erro ao atualizar intervalo de almoço",
-    };
+    return { success: false, error: "Erro ao adicionar intervalo" };
+  }
+}
+
+// ============================================================
+// REMOVE BREAK TIME
+// ============================================================
+
+export async function removeBreakTime(
+  _prevState: AvailabilityResponse,
+  breakTimeId: string
+): Promise<AvailabilityResponse> {
+  try {
+    const orgId = await getOrgIdAsync();
+
+    const breakTime = await prisma.breakTime.findUnique({
+      where: { id: breakTimeId },
+    });
+
+    if (!breakTime || breakTime.organizationId !== orgId) {
+      return { success: false, error: "Intervalo não encontrado" };
+    }
+
+    await prisma.breakTime.delete({ where: { id: breakTimeId } });
+
+    revalidatePath("/dashboard/settings");
+
+    return { success: true, message: "Intervalo removido com sucesso!" };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Erro ao remover intervalo:", errorMessage);
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: false, error: "Erro ao remover intervalo" };
   }
 }
 

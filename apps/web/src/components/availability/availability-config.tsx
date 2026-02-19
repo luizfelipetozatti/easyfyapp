@@ -5,11 +5,10 @@ import { Button } from "@easyfyapp/ui";
 import { CheckCircle, AlertCircle } from "lucide-react";
 import {
   updateWorkingHours,
-  updateBreakTime,
   getAvailabilityConfig,
 } from "@/app/actions/availability";
 import WorkingHoursForm from "./working-hours-form";
-import BreakTimeForm from "./break-time-form";
+import BreakTimesSection from "./break-times-section";
 import UnavailableDaysSection from "./unavailable-days-section";
 
 interface AvailabilityConfigProps {
@@ -45,13 +44,7 @@ export function AvailabilityConfig({ initialData }: AvailabilityConfigProps) {
     text: string;
   } | null>(null);
 
-  const [breakTimeMessage, setBreakTimeMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
-
   const [workingHoursPending, startWorkingHoursTransition] = useTransition();
-  const [breakTimePending, startBreakTimeTransition] = useTransition();
 
   const handleSubmitWorkingHours = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -68,21 +61,6 @@ export function AvailabilityConfig({ initialData }: AvailabilityConfigProps) {
     });
   };
 
-  const handleSubmitBreakTime = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    startBreakTimeTransition(() => {
-      updateBreakTime({ success: false, error: "" }, formData).then((result) => {
-        if (result.success === true) {
-          setBreakTimeMessage({ type: "success", text: "Intervalo salvo" });
-          setTimeout(() => setBreakTimeMessage(null), 3000);
-        } else {
-          setBreakTimeMessage({ type: "error", text: result.error });
-        }
-      });
-    });
-  };
-
   if (!initialData.success) {
     return (
       <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
@@ -91,7 +69,7 @@ export function AvailabilityConfig({ initialData }: AvailabilityConfigProps) {
     );
   }
 
-  const { workingHours, breakTime, unavailableDays } = initialData.data;
+  const { workingHours, breakTimes, unavailableDays } = initialData.data;
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
@@ -116,28 +94,16 @@ export function AvailabilityConfig({ initialData }: AvailabilityConfigProps) {
         </div>
       </form>
 
-      {/* Intervalo */}
-      <form onSubmit={handleSubmitBreakTime}>
-        <div className="border-t border-border p-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-foreground">Intervalo</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Pausa bloqueada em todos os dias de atendimento
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <BreakTimeForm breakTime={breakTime} />
-              <div className="flex items-center gap-3">
-                <InlineMessage message={breakTimeMessage} />
-                <Button type="submit" size="sm" disabled={breakTimePending}>
-                  {breakTimePending ? "Salvando…" : "Salvar"}
-                </Button>
-              </div>
-            </div>
-          </div>
+      {/* Intervalos */}
+      <div className="border-t border-border p-6">
+        <div className="mb-4">
+          <p className="text-sm font-semibold text-foreground">Intervalos</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Pausas bloqueadas em todos os dias de atendimento (almoço, buscar filhos, etc.)
+          </p>
         </div>
-      </form>
+        <BreakTimesSection breakTimes={breakTimes || []} />
+      </div>
 
       {/* Dias indisponíveis */}
       <div className="border-t border-border p-6">
@@ -152,4 +118,3 @@ export function AvailabilityConfig({ initialData }: AvailabilityConfigProps) {
     </div>
   );
 }
-
