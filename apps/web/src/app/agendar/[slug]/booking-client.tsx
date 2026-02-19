@@ -189,7 +189,7 @@ export function BookingPageClient({
                           }).format(service.price)
                         : "Grátis"}
                     </p>
-                    <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <p className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
                       <Clock className="h-3 w-3" />
                       {service.durationMinutes} min
                     </p>

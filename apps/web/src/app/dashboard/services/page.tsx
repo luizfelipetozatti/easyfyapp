@@ -1,95 +1,90 @@
 import { prisma } from "@easyfyapp/database";
-import { format } from "date-fns";
+import { Briefcase } from "lucide-react";
 
 // Force dynamic rendering (no static generation at build time)
-export const dynamic = 'force-dynamic';
-
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  Badge,
-} from "@easyfyapp/ui";
-import { Clock, DollarSign } from "lucide-react";
+export const dynamic = "force-dynamic";
 
 import { getCurrentUserOrgId } from "@/lib/auth/dashboard";
+import { ServiceCard } from "./service-card";
+import { NewServiceButton } from "./new-service-button";
+
+// ============================================================
+// PAGE
+// ============================================================
 
 export default async function ServicesPage() {
   const orgId = await getCurrentUserOrgId();
 
   const services = await prisma.service.findMany({
     where: { organizationId: orgId },
-    orderBy: { name: "asc" },
+    orderBy: [{ active: "desc" }, { name: "asc" }],
     include: {
-      _count: {
-        select: { bookings: true },
-      },
+      _count: { select: { bookings: true } },
     },
   });
 
+  const activeCount = services.filter((s) => s.active).length;
+
   return (
     <div className="space-y-6">
+      {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Serviços</h1>
           <p className="text-muted-foreground">
-            Gerencie os serviços oferecidos
+            Gerencie os serviços oferecidos pela sua organização
           </p>
         </div>
-        {/* TODO: Botão de adicionar serviço */}
+        <NewServiceButton />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {services.map((service) => {
-          const priceFormatted = new Intl.NumberFormat("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          }).format(Number(service.price));
+      {/* Summary stats */}
+      {services.length > 0 && (
+        <div className="flex gap-4 text-sm text-muted-foreground">
+          <span>
+            <strong className="text-foreground">{services.length}</strong>{" "}
+            {services.length === 1 ? "serviço" : "serviços"} no total
+          </span>
+          <span>·</span>
+          <span>
+            <strong className="text-foreground">{activeCount}</strong>{" "}
+            {activeCount === 1 ? "ativo" : "ativos"}
+          </span>
+        </div>
+      )}
 
-          return (
-            <Card key={service.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg">{service.name}</CardTitle>
-                  <Badge variant={service.active ? "success" : "secondary"}>
-                    {service.active ? "Ativo" : "Inativo"}
-                  </Badge>
-                </div>
-                {service.description && (
-                  <CardDescription>{service.description}</CardDescription>
-                )}
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <DollarSign className="h-3.5 w-3.5" />
-                    {priceFormatted}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5" />
-                    {service.durationMinutes} min
-                  </span>
-                  <span>
-                    {service._count.bookings} agendamento
-                    {service._count.bookings !== 1 ? "s" : ""}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {services.length === 0 && (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">
-              Nenhum serviço cadastrado. Crie seu primeiro serviço.
-            </p>
-          </CardContent>
-        </Card>
+      {/* Services grid */}
+      {services.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {services.map((service) => (
+            <ServiceCard
+              key={service.id}
+              service={{
+                id: service.id,
+                name: service.name,
+                description: service.description,
+                price: Number(service.price),
+                durationMinutes: service.durationMinutes,
+                active: service.active,
+                bookingsCount: service._count.bookings,
+              }}
+            />
+          ))}
+        </div>
+      ) : (
+        /* Empty state */
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50 py-20 text-center">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+            <Briefcase className="h-7 w-7 text-muted-foreground" />
+          </div>
+          <h3 className="text-base font-semibold">Nenhum serviço cadastrado</h3>
+          <p className="mt-1 text-sm text-muted-foreground max-w-xs">
+            Crie o primeiro serviço para que seus clientes possam agendar.
+          </p>
+          <div className="mt-6">
+            <NewServiceButton />
+          </div>
+        </div>
       )}
     </div>
   );
