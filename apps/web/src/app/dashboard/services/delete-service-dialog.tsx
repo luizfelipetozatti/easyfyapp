@@ -65,7 +65,7 @@ export function DeleteServiceDialog({
 
           <p className="text-sm text-muted-foreground leading-relaxed">
             Tem certeza que deseja excluir o serviço{" "}
-            <strong className="text-foreground">"{service.name}"</strong>?{" "}
+            <strong className="text-foreground">&quot;{service.name}&quot;</strong>?{" "}
             Se houver agendamentos vinculados, você precisa desativar o serviço
             em vez de excluí-lo.
           </p>
