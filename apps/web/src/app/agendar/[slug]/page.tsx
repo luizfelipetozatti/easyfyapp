@@ -1,10 +1,22 @@
 import { prisma } from "@easyfyapp/database";
+import { addMonths } from "date-fns";
 import { Calendar } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import { BookingPageClient } from "./booking-client";
 
 export const dynamic = 'force-dynamic';
+
+// Mapeamento enum DayOfWeek → getDay() (0=Dom, 6=Sáb)
+const DAY_ENUM_TO_JS: Record<string, number> = {
+  SUNDAY: 0,
+  MONDAY: 1,
+  TUESDAY: 2,
+  WEDNESDAY: 3,
+  THURSDAY: 4,
+  FRIDAY: 5,
+  SATURDAY: 6,
+};
 
 interface BookingPageProps {
   params: { slug: string };
@@ -27,6 +39,9 @@ export async function generateMetadata({ params }: BookingPageProps) {
 }
 
 export default async function BookingPage({ params }: BookingPageProps) {
+  const today = new Date();
+  const sixMonthsFromNow = addMonths(today, 6);
+
   const org = await prisma.organization.findFirst({
     where: { 
       slug: params.slug,
@@ -37,12 +52,37 @@ export default async function BookingPage({ params }: BookingPageProps) {
         where: { active: true },
         orderBy: { name: "asc" },
       },
+      workingHours: {
+        select: { dayOfWeek: true, isWorking: true },
+      },
+      unavailableDays: {
+        where: { date: { gte: today, lte: sixMonthsFromNow } },
+        select: { date: true },
+        orderBy: { date: "asc" },
+      },
     },
   });
 
   if (!org) {
     notFound();
   }
+
+  // Números JS (0=Dom...6=Sáb) dos dias em que a org NÃO trabalha
+  const nonWorkingDayNumbers = org.workingHours
+    .filter((wh) => !wh.isWorking)
+    .map((wh) => DAY_ENUM_TO_JS[wh.dayOfWeek])
+    .filter((n): n is number => n !== undefined);
+
+  // Datas específicas bloqueadas (YYYY-MM-DD) dentro dos próximos 6 meses
+  // Garantir que as datas sejam no formato local (não UTC)
+  // O Prisma retorna @db.Date como Date UTC, então usar getUTC* para extrair a data correta
+  const unavailableDates = org.unavailableDays.map((d) => {
+    const dateObj = d.date instanceof Date ? d.date : new Date(d.date);
+    const year = dateObj.getUTCFullYear();
+    const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getUTCDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -75,6 +115,8 @@ export default async function BookingPage({ params }: BookingPageProps) {
             price: Number(s.price),
             durationMinutes: s.durationMinutes,
           }))}
+          nonWorkingDayNumbers={nonWorkingDayNumbers}
+          unavailableDates={unavailableDates}
         />
       </main>
 

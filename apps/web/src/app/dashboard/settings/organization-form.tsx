@@ -11,7 +11,7 @@ import {
   Button,
   PhoneInput,
 } from "@easyfyapp/ui";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { toast } from "sonner";
 import { updateOrganization } from "@/app/actions/organization";
 import { PublicUrlSection } from "@/components/public-url-section";
@@ -26,15 +26,18 @@ interface OrganizationFormProps {
 
 export function OrganizationForm({ organization }: OrganizationFormProps) {
   const [isPending, startTransition] = useTransition();
+  const [appUrl, setAppUrl] = useState<string>("");
   const [formData, setFormData] = useState({
     name: organization.name,
     slug: organization.slug,
     whatsappNumber: organization.whatsappNumber ?? "",
   });
 
-  // URL base da aplicação
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
-    (typeof window !== 'undefined' ? window.location.origin : 'https://easyfyapp-web.vercel.app');
+  // URL base da aplicação - Calcula no cliente apenas para evitar hydration mismatch
+  useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    setAppUrl(url);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -118,11 +121,13 @@ export function OrganizationForm({ organization }: OrganizationFormProps) {
               />
             </div>
           </div>
-          <PublicUrlSection
-            url={`${appUrl}/agendar/${formData.slug}`}
-            label="URL Pública de Agendamento"
-            description="Compartilhe esta URL com seus clientes para que eles possam agendar diretamente"
-          />
+          {appUrl && (
+            <PublicUrlSection
+              url={`${appUrl}/agendar/${formData.slug}`}
+              label="URL Pública de Agendamento"
+              description="Compartilhe esta URL com seus clientes para que eles possam agendar diretamente"
+            />
+          )}
           <div className="space-y-2">
             <Label htmlFor="whatsapp">Número WhatsApp</Label>
             <PhoneInput
