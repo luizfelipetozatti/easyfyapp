@@ -2,8 +2,22 @@
 // Easyfy - WhatsApp Service (Evolution API)
 // ============================================================
 
+import { prisma } from "@easyfyapp/database";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import {
+  DEFAULT_TEMPLATES,
+  TEMPLATE_META,
+  renderTemplate,
+  type TemplateType,
+} from "@/lib/whatsapp-constants";
+
+// Re-export for convenience
+export { DEFAULT_TEMPLATES, TEMPLATE_META, renderTemplate, type TemplateType };
+
+// ============================================================
+// TYPES
+// ============================================================
 
 interface WhatsAppConfig {
   apiUrl: string;
@@ -16,13 +30,90 @@ interface SendMessagePayload {
   text: string;
 }
 
-interface BookingMessageData {
+export interface BookingMessageData {
   clientName: string;
   clientPhone: string;
   serviceName: string;
   startTime: Date;
   price: number;
   organizationName: string;
+  /** Opcional: se fornecido, busca o template customizado da organização */
+  organizationId?: string;
+}
+
+// ============================================================
+// TEMPLATE ENGINE — server-side resolver
+// ============================================================
+
+/**
+ * Busca o template customizado da organização no banco ou retorna o padrão.
+ */
+async function resolveTemplate(
+  orgId: string | undefined,
+  type: TemplateType
+): Promise<string> {
+  if (!orgId) return DEFAULT_TEMPLATES[type];
+
+  try {
+    const custom = await prisma.whatsAppTemplate.findUnique({
+      where: { organizationId_type: { organizationId: orgId, type } },
+    });
+    return custom?.content ?? DEFAULT_TEMPLATES[type];
+  } catch {
+    return DEFAULT_TEMPLATES[type];
+  }
+}
+
+// ============================================================
+// MESSAGE BUILDERS (mantidos para compatibilidade)
+// ============================================================
+
+export function buildBookingConfirmationMessage(
+  data: Omit<BookingMessageData, "clientPhone" | "price" | "organizationId">
+): string {
+  const formattedDate = format(data.startTime, "dd/MM/yyyy 'às' HH:mm", {
+    locale: ptBR,
+  });
+
+  return renderTemplate(DEFAULT_TEMPLATES.CONFIRMATION, {
+    nome: data.clientName,
+    serviço: data.serviceName,
+    data: formattedDate,
+    organização: data.organizationName,
+  });
+}
+
+export function buildBookingCancellationMessage(
+  data: Pick<BookingMessageData, "clientName" | "serviceName" | "startTime">
+): string {
+  const formattedDate = format(data.startTime, "dd/MM/yyyy 'às' HH:mm", {
+    locale: ptBR,
+  });
+
+  return renderTemplate(DEFAULT_TEMPLATES.CANCELLATION, {
+    nome: data.clientName,
+    serviço: data.serviceName,
+    data: formattedDate,
+    organização: "",
+  });
+}
+
+export function buildBookingReminderMessage(
+  data: Pick<
+    BookingMessageData,
+    "clientName" | "serviceName" | "startTime" | "organizationName"
+  >
+): string {
+  const formattedDate = format(data.startTime, "dd/MM/yyyy 'às' HH:mm", {
+    locale: ptBR,
+  });
+
+  return renderTemplate(DEFAULT_TEMPLATES.REMINDER, {
+    nome: data.clientName,
+    serviço: data.serviceName,
+    data: formattedDate,
+    organização: data.organizationName,
+  });
 }
 
 function getConfig(): WhatsAppConfig {
@@ -37,83 +128,6 @@ function getConfig(): WhatsAppConfig {
   }
 
   return { apiUrl, apiKey, instance };
-}
-
-// ============================================================
-// Templates de mensagens
-// ============================================================
-
-export function buildBookingConfirmationMessage(
-  data: BookingMessageData
-): string {
-  const formattedDate = format(data.startTime, "dd/MM/yyyy 'às' HH:mm", {
-    locale: ptBR,
-  });
-
-  const priceFormatted = new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(data.price);
-
-  return [
-    `Olá ${data.clientName}! 👋`,
-    ``,
-    `Seu agendamento para *${data.serviceName}* na data *${formattedDate}* foi recebido!`,
-    ``,
-    `📍 *${data.organizationName}*`,
-    data.price > 0
-      ? `💰 Valor: ${priceFormatted}`
-      : `✅ Serviço gratuito`,
-    ``,
-    data.price > 0
-      ? `Pague o PIX para confirmar sua reserva. Você receberá os dados de pagamento em seguida.`
-      : `Seu agendamento está confirmado!`,
-    ``,
-    `Caso precise cancelar ou reagendar, entre em contato conosco.`,
-    ``,
-    `_Mensagem automática - Easyfy_`,
-  ].join("\n");
-}
-
-export function buildBookingCancellationMessage(
-  data: Pick<BookingMessageData, "clientName" | "serviceName" | "startTime">
-): string {
-  const formattedDate = format(data.startTime, "dd/MM/yyyy 'às' HH:mm", {
-    locale: ptBR,
-  });
-
-  return [
-    `Olá ${data.clientName},`,
-    ``,
-    `Informamos que seu agendamento para *${data.serviceName}* em *${formattedDate}* foi *cancelado*.`,
-    ``,
-    `Se desejar reagendar, acesse nosso link de agendamento.`,
-    ``,
-    `_Mensagem automática - Easyfy_`,
-  ].join("\n");
-}
-
-export function buildBookingReminderMessage(
-  data: Pick<
-    BookingMessageData,
-    "clientName" | "serviceName" | "startTime" | "organizationName"
-  >
-): string {
-  const formattedDate = format(data.startTime, "dd/MM/yyyy 'às' HH:mm", {
-    locale: ptBR,
-  });
-
-  return [
-    `Lembrete: Olá ${data.clientName}! 🔔`,
-    ``,
-    `Sua consulta/reserva para *${data.serviceName}* é amanhã, *${formattedDate}*.`,
-    ``,
-    `📍 *${data.organizationName}*`,
-    ``,
-    `Confirme sua presença respondendo esta mensagem.`,
-    ``,
-    `_Mensagem automática - Easyfy_`,
-  ].join("\n");
 }
 
 // ============================================================
@@ -169,8 +183,7 @@ async function sendTextMessage(payload: SendMessagePayload): Promise<{
       messageId: result?.key?.id,
     };
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unknown error";
+    const message = error instanceof Error ? error.message : "Unknown error";
     console.error(`[WhatsApp] Send failed:`, message);
     return { success: false, error: message };
   }
@@ -183,35 +196,64 @@ async function sendTextMessage(payload: SendMessagePayload): Promise<{
 export async function sendBookingConfirmation(
   data: BookingMessageData
 ): Promise<{ success: boolean; error?: string }> {
-  const text = buildBookingConfirmationMessage(data);
-
-  return sendTextMessage({
-    number: data.clientPhone,
-    text,
+  const formattedDate = format(data.startTime, "dd/MM/yyyy 'às' HH:mm", {
+    locale: ptBR,
   });
+
+  const template = await resolveTemplate(data.organizationId, "CONFIRMATION");
+  const text = renderTemplate(template, {
+    nome: data.clientName,
+    serviço: data.serviceName,
+    data: formattedDate,
+    organização: data.organizationName,
+  });
+
+  return sendTextMessage({ number: data.clientPhone, text });
 }
 
 export async function sendBookingCancellation(
-  data: Pick<BookingMessageData, "clientName" | "clientPhone" | "serviceName" | "startTime">
+  data: Pick<
+    BookingMessageData,
+    "clientName" | "clientPhone" | "serviceName" | "startTime" | "organizationId"
+  >
 ): Promise<{ success: boolean; error?: string }> {
-  const text = buildBookingCancellationMessage(data);
-
-  return sendTextMessage({
-    number: data.clientPhone,
-    text,
+  const formattedDate = format(data.startTime, "dd/MM/yyyy 'às' HH:mm", {
+    locale: ptBR,
   });
+
+  const template = await resolveTemplate(data.organizationId, "CANCELLATION");
+  const text = renderTemplate(template, {
+    nome: data.clientName,
+    serviço: data.serviceName,
+    data: formattedDate,
+    organização: "",
+  });
+
+  return sendTextMessage({ number: data.clientPhone, text });
 }
 
 export async function sendBookingReminder(
   data: Pick<
     BookingMessageData,
-    "clientName" | "clientPhone" | "serviceName" | "startTime" | "organizationName"
+    | "clientName"
+    | "clientPhone"
+    | "serviceName"
+    | "startTime"
+    | "organizationName"
+    | "organizationId"
   >
 ): Promise<{ success: boolean; error?: string }> {
-  const text = buildBookingReminderMessage(data);
-
-  return sendTextMessage({
-    number: data.clientPhone,
-    text,
+  const formattedDate = format(data.startTime, "dd/MM/yyyy 'às' HH:mm", {
+    locale: ptBR,
   });
+
+  const template = await resolveTemplate(data.organizationId, "REMINDER");
+  const text = renderTemplate(template, {
+    nome: data.clientName,
+    serviço: data.serviceName,
+    data: formattedDate,
+    organização: data.organizationName,
+  });
+
+  return sendTextMessage({ number: data.clientPhone, text });
 }

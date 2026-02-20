@@ -38,6 +38,12 @@ enum OrganizationStatus {
   PENDING_REACTIVATION
 }
 
+enum WhatsAppTemplateType {
+  CONFIRMATION
+  CANCELLATION
+  REMINDER
+}
+
 // ============================================================
 // MULTI-TENANCY: Organizations
 // ============================================================
@@ -67,6 +73,7 @@ model Organization {
   breakTime        BreakTime[]
   unavailableDays  UnavailableDay[]
   fullyBookedDays  FullyBookedDay[]
+  whatsappTemplates WhatsAppTemplate[]
 
   @@map("organizations")
 }
@@ -242,4 +249,27 @@ model FullyBookedDay {
   @@index([organizationId, serviceId])
   @@index([organizationId, date])
   @@map("fully_booked_days")
+}
+
+// ============================================================
+// WHATSAPP TEMPLATES (Templates personalizáveis por organização)
+// Armazena somente os templates customizados.
+// O fallback para os padrões é feito em código.
+// ============================================================
+
+model WhatsAppTemplate {
+  id             String               @id @default(uuid()) @db.Uuid
+  organizationId String               @map("organization_id") @db.Uuid
+  type           WhatsAppTemplateType
+  content        String               @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, type])
+  @@index([organizationId])
+  @@map("whatsapp_templates")
 }
