@@ -5,22 +5,36 @@ import {
   CardDescription,
   CardContent,
 } from "@easyfyapp/ui";
-import { MessageCircle, Webhook, ExternalLink } from "lucide-react";
+import { MessageCircle, Webhook, AlertCircle } from "lucide-react";
+import { getWhatsAppTemplates } from "@/app/actions/whatsapp-templates";
+import { TemplateManager } from "./components/template-manager";
+import { CopyUrlButton } from "./components/copy-url-button";
 
-export default function WhatsAppPage() {
+export const dynamic = "force-dynamic";
+
+export default async function WhatsAppPage() {
+  const [templates] = await Promise.all([getWhatsAppTemplates()]);
+
   const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/webhook/whatsapp`;
+  const isEvolutionConfigured = !!(
+    process.env.EVOLUTION_API_URL &&
+    process.env.EVOLUTION_API_KEY &&
+    process.env.EVOLUTION_INSTANCE
+  );
 
   return (
     <div className="space-y-6">
+      {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold">WhatsApp</h1>
         <p className="text-muted-foreground">
-          Configuração da integração com Evolution API
+          Configuração da integração com Evolution API e templates de mensagem
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Status */}
+      {/* Integration Cards */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Connection Status */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -28,31 +42,54 @@ export default function WhatsAppPage() {
               Status da Conexão
             </CardTitle>
             <CardDescription>
-              Verifique se a instância do WhatsApp está conectada
+              Verifique se a instância do WhatsApp está configurada
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="rounded-lg bg-muted p-4">
-              <p className="text-sm text-muted-foreground">
-                Configure as variáveis de ambiente{" "}
-                <code className="rounded bg-background px-1 py-0.5 text-xs">
-                  EVOLUTION_API_URL
-                </code>
-                ,{" "}
-                <code className="rounded bg-background px-1 py-0.5 text-xs">
-                  EVOLUTION_API_KEY
-                </code>{" "}
-                e{" "}
-                <code className="rounded bg-background px-1 py-0.5 text-xs">
-                  EVOLUTION_INSTANCE
-                </code>{" "}
-                para ativar a integração.
-              </p>
-            </div>
+            {isEvolutionConfigured ? (
+              <div className="flex items-start gap-3 rounded-lg border border-whatsapp/20 bg-whatsapp/5 p-4">
+                <div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-whatsapp ring-4 ring-whatsapp/20" />
+                <div>
+                  <p className="text-sm font-medium text-whatsapp">
+                    Integração configurada
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Variáveis de ambiente detectadas. Verifique o status da
+                    instância na Evolution API.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/40 dark:bg-amber-900/10">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                <div>
+                  <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                    Integração não configurada
+                  </p>
+                  <p className="mt-1 text-xs text-amber-600/80 dark:text-amber-400/70">
+                    Configure as variáveis de ambiente:
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {[
+                      "EVOLUTION_API_URL",
+                      "EVOLUTION_API_KEY",
+                      "EVOLUTION_INSTANCE",
+                    ].map((env) => (
+                      <code
+                        key={env}
+                        className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-mono text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
+                      >
+                        {env}
+                      </code>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Webhook */}
+        {/* Webhook URL */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -63,58 +100,28 @@ export default function WhatsAppPage() {
               Configure este URL na sua instância Evolution API
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="rounded-lg border bg-muted/50 p-3">
-              <code className="break-all text-sm">{webhookUrl}</code>
-            </div>
-            <p className="mt-3 text-xs text-muted-foreground">
-              Eventos recomendados: <strong>messages.upsert</strong>,{" "}
-              <strong>messages.update</strong>
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Templates */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Templates de Mensagem</CardTitle>
-            <CardDescription>
-              Mensagens automáticas enviadas aos clientes
-            </CardDescription>
-          </CardHeader>
           <CardContent className="space-y-4">
-            <TemplatePreview
-              title="Confirmação de Agendamento"
-              message={`Olá [nome]! 👋\n\nSeu agendamento para *[serviço]* na data *[data]* foi recebido!\n\n📍 *[organização]*\n💰 Valor: R$ [valor]\n\nPague o PIX para confirmar sua reserva.\n\n_Mensagem automática - Easyfy_`}
-            />
-            <TemplatePreview
-              title="Cancelamento"
-              message={`Olá [nome],\n\nInformamos que seu agendamento para *[serviço]* em *[data]* foi *cancelado*.\n\nSe desejar reagendar, acesse nosso link.\n\n_Mensagem automática - Easyfy_`}
-            />
-            <TemplatePreview
-              title="Lembrete (24h antes)"
-              message={`Lembrete: Olá [nome]! 🔔\n\nSua consulta/reserva para *[serviço]* é amanhã, *[data]*.\n\n📍 *[organização]*\n\nConfirme respondendo esta mensagem.\n\n_Mensagem automática - Easyfy_`}
-            />
+            <CopyUrlButton url={webhookUrl} />
+            <div className="rounded-lg bg-muted/50 p-3">
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">
+                  Eventos recomendados:
+                </span>{" "}
+                <code className="rounded bg-background px-1 py-0.5 text-xs">
+                  messages.upsert
+                </code>
+                ,{" "}
+                <code className="rounded bg-background px-1 py-0.5 text-xs">
+                  messages.update
+                </code>
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
-}
 
-function TemplatePreview({
-  title,
-  message,
-}: {
-  title: string;
-  message: string;
-}) {
-  return (
-    <div className="rounded-lg border p-4">
-      <h4 className="mb-2 text-sm font-semibold">{title}</h4>
-      <pre className="whitespace-pre-wrap rounded-md bg-whatsapp-light/30 p-3 text-xs leading-relaxed dark:bg-whatsapp-dark/20">
-        {message}
-      </pre>
+      {/* Template Manager */}
+      <TemplateManager initialTemplates={templates} />
     </div>
   );
 }
