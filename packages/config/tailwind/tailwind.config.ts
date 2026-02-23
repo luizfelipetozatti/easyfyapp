@@ -38,11 +38,29 @@ const config: Omit<Config, "content"> = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Brand colors - WhatsApp green
+        // Brand colors - Menta (primary action)
+        brand: {
+          DEFAULT: "#10B981",  // emerald-500
+          hover: "#059669",    // emerald-600
+          light: "#D1FAE5",    // emerald-100
+        },
+        // Structure / text - Azul Noturno
+        navy: {
+          DEFAULT: "#1E293B",  // slate-800
+          dark: "#0F172A",     // slate-900
+          muted: "#64748B",    // slate-500
+        },
+        // Backgrounds / surfaces
+        surface: {
+          background: "#F8FAFC",  // slate-50
+          card: "#FFFFFF",
+          border: "#E2E8F0",      // slate-200
+        },
+        // Legacy WhatsApp alias (kept for compatibility)
         whatsapp: {
-          DEFAULT: "#25D366",
-          dark: "#128C7E",
-          light: "#DCF8C6",
+          DEFAULT: "#10B981",
+          dark: "#059669",
+          light: "#D1FAE5",
         },
       },
       borderRadius: {

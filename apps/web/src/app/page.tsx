@@ -1,4 +1,4 @@
-import { Button } from "@easyfyapp/ui";
+import { Button, Logo } from "@easyfyapp/ui";
 import { Calendar, MessageCircle, Building2, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -6,12 +6,11 @@ export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header */}
-      <header className="border-b">
+      <header className="border-b bg-white">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">Easyfy</span>
-          </div>
+          <Link href="/" className="flex items-center">
+            <Logo className="h-10" />
+          </Link>
           <nav className="flex items-center gap-4">
             <Link href="/login">
               <Button variant="ghost">Entrar</Button>
@@ -26,9 +25,9 @@ export default function HomePage() {
       {/* Hero */}
       <main className="flex-1">
         <section className="container mx-auto px-4 py-24 text-center">
-          <h1 className="mx-auto max-w-4xl text-5xl font-bold tracking-tight">
+          <h1 className="mx-auto max-w-4xl text-5xl font-bold tracking-tight text-navy-dark">
             Agendamento inteligente com{" "}
-            <span className="text-whatsapp">WhatsApp</span> automático
+            <span className="text-brand">WhatsApp</span> automático
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
             Simplifique o agendamento da sua clínica ou coworking. Seus clientes
@@ -49,14 +48,14 @@ export default function HomePage() {
         </section>
 
         {/* Features */}
-        <section className="border-t bg-muted/50 py-24">
+        <section className="border-t bg-slate-50 py-24">
           <div className="container mx-auto px-4">
             <h2 className="text-center text-3xl font-bold">
               Tudo que você precisa
             </h2>
             <div className="mt-12 grid gap-8 md:grid-cols-3">
-              <div className="rounded-lg border bg-card p-6">
-                <Calendar className="h-10 w-10 text-primary" />
+              <div className="rounded-lg border border-surface-border bg-surface-card p-6 shadow-sm">
+                <Calendar className="h-10 w-10 text-brand" />
                 <h3 className="mt-4 text-xl font-semibold">
                   Agendamento Online
                 </h3>
@@ -65,8 +64,8 @@ export default function HomePage() {
                   necessidade de ligação.
                 </p>
               </div>
-              <div className="rounded-lg border bg-card p-6">
-                <MessageCircle className="h-10 w-10 text-whatsapp" />
+              <div className="rounded-lg border border-surface-border bg-surface-card p-6 shadow-sm">
+                <MessageCircle className="h-10 w-10 text-brand" />
                 <h3 className="mt-4 text-xl font-semibold">
                   WhatsApp Automático
                 </h3>
@@ -75,8 +74,8 @@ export default function HomePage() {
                   faltas em até 70%.
                 </p>
               </div>
-              <div className="rounded-lg border bg-card p-6">
-                <Building2 className="h-10 w-10 text-primary" />
+              <div className="rounded-lg border border-surface-border bg-surface-card p-6 shadow-sm">
+                <Building2 className="h-10 w-10 text-brand" />
                 <h3 className="mt-4 text-xl font-semibold">Multi-Negócios</h3>
                 <p className="mt-2 text-muted-foreground">
                   Gerencie múltiplas unidades ou negócios em uma única

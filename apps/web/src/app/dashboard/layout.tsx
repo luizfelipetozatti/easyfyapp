@@ -1,4 +1,4 @@
-import { Button } from "@easyfyapp/ui";
+import { Button, Logo } from "@easyfyapp/ui";
 import {
   Calendar,
   LayoutDashboard,
@@ -52,8 +52,9 @@ export default async function DashboardLayout({
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex h-16 items-center gap-2 border-b px-6">
-            <Calendar className="h-6 w-6 text-primary" />
-            <span className="text-lg font-bold">Easyfy</span>
+            <Link href="/dashboard" className="flex items-center">
+              <Logo className="h-10" />
+            </Link>
           </div>
 
           {/* Nav */}
