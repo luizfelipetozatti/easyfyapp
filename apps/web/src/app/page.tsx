@@ -27,7 +27,7 @@ export default function HomePage() {
         <section className="container mx-auto px-4 py-24 text-center">
           <h1 className="mx-auto max-w-4xl text-5xl font-bold tracking-tight text-navy-dark">
             Agendamento inteligente com{" "}
-            <span className="text-brand">WhatsApp</span> automático
+            <span className="text-whatsapp">WhatsApp</span> automático
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
             Simplifique o agendamento da sua clínica ou coworking. Seus clientes
