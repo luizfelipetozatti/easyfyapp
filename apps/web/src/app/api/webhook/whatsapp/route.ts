@@ -5,6 +5,7 @@
 
 import { prisma } from "@easyfyapp/database";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { evolutionClient } from "@/lib/evolution-client";
 
 interface EvolutionWebhookPayload {
@@ -100,11 +101,12 @@ async function handleIncomingMessage(phone: string, text: string, instanceName: 
 
   console.log(`[Webhook] Buscando booking para phones: ${[...phonesToTry].join(", ")}`);
 
-  // Buscar booking pendente mais recente deste telefone
+  // Buscar booking ativo (PENDENTE ou CONFIRMADO) mais recente deste telefone.
+  // Confirmação só se aplica a PENDENTE; cancelamento se aplica a ambos.
   const booking = await prisma.booking.findFirst({
     where: {
       clientPhone: { in: [...phonesToTry] },
-      status: "PENDENTE",
+      status: { in: ["PENDENTE", "CONFIRMADO"] },
     },
     orderBy: { createdAt: "desc" },
     include: {
@@ -125,10 +127,15 @@ async function handleIncomingMessage(phone: string, text: string, instanceName: 
   const cancelKeywords = ["cancelar", "cancela", "não", "nao"];
 
   if (confirmKeywords.some((kw) => text.includes(kw))) {
+    if (booking.status !== "PENDENTE") {
+      console.log(`[Webhook] Booking ${booking.id} já está ${booking.status} — ignorando confirmação`);
+      return;
+    }
     await prisma.booking.update({
       where: { id: booking.id },
       data: { status: "CONFIRMADO" },
     });
+    revalidatePath("/dashboard/bookings");
     console.log(`[Webhook] Booking ${booking.id} confirmed via WhatsApp`);
 
     // Enviar resposta de confirmação ao cliente
@@ -144,6 +151,7 @@ async function handleIncomingMessage(phone: string, text: string, instanceName: 
       where: { id: booking.id },
       data: { status: "CANCELADO" },
     });
+    revalidatePath("/dashboard/bookings");
     console.log(`[Webhook] Booking ${booking.id} cancelled via WhatsApp`);
 
     // Enviar resposta de cancelamento ao cliente
