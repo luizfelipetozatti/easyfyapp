@@ -59,7 +59,13 @@ function loadGlobalConfig(): Omit<EvolutionConfig, "instance"> {
     );
   }
 
-  return { apiUrl, apiKey };
+  // Garante que a URL sempre tem protocolo e sem trailing slash
+  const normalizedUrl = apiUrl
+    .trim()
+    .replace(/\/+$/, "") // remove trailing slashes
+    .replace(/^(?!https?:\/\/)/, "https://"); // adiciona https:// se não tiver protocolo
+
+  return { apiUrl: normalizedUrl, apiKey };
 }
 
 /**
