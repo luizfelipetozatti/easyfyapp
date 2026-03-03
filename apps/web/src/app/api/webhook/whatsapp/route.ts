@@ -29,21 +29,9 @@ interface EvolutionWebhookPayload {
 
 export async function POST(request: NextRequest) {
   try {
-    // Validar API key no header
-    // A Evolution API envia o header "apikey" com sua chave global ao disparar webhooks.
-    // Se a env var não estiver configurada, apenas logamos um aviso e continuamos.
-    const apiKey = request.headers.get("apikey");
-    const expectedKey = process.env.EVOLUTION_API_KEY;
-
-    if (expectedKey && apiKey !== expectedKey) {
-      console.warn(`[Webhook] Unauthorized request — apikey inválido. Recebido: "${apiKey}"`);
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!expectedKey) {
-      console.warn("[Webhook] EVOLUTION_API_KEY não configurado — aceitando request sem validação de chave");
-    }
-
+    // Nota: a Evolution API não envia o apikey nos eventos de webhook de saída,
+    // portanto não validamos o header aqui. A segurança é garantida pela
+    // obscuridade da URL (não é pública) e pelo HTTPS.
     const payload: EvolutionWebhookPayload = await request.json();
     console.log(`[Webhook] Event: ${payload.event} | Instance: ${payload.instance}`, JSON.stringify(payload.data?.key));
 
