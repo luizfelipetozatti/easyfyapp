@@ -10,9 +10,11 @@ import { useRouter } from "next/navigation";
 import { Button, Card, CardContent } from "@easyfyapp/ui";
 import { CheckCircle2, Loader2, RefreshCw, Smartphone, Unlink, WifiOff } from "lucide-react";
 import Image from "next/image";
+import { toast } from "sonner";
 import {
   connectWhatsApp,
   disconnectWhatsApp,
+  reconfigureWebhook,
   refreshQrCode,
   type ConnectionStatus,
   type WhatsAppConnectionState,
@@ -134,6 +136,21 @@ export function WhatsAppConnectCard({ initialState }: Props) {
     });
   }
 
+  function handleReconfigureWebhook() {
+    startTransition(async () => {
+      const result = await reconfigureWebhook();
+      if (result.success) {
+        toast.success("Webhook sincronizado!", {
+          description: "A Evolution API agora vai encaminhar as respostas dos clientes.",
+        });
+      } else {
+        toast.error("Erro ao sincronizar webhook", {
+          description: result.error ?? "Tente novamente.",
+        });
+      }
+    });
+  }
+
   function handleDisconnect() {
     startTransition(async () => {
       stopPolling();
@@ -170,7 +187,7 @@ export function WhatsAppConnectCard({ initialState }: Props) {
   // ============================================================
 
   if (state.status === "open") {
-    return <ConnectedState instanceName={state.instanceName} onDisconnect={handleDisconnect} isPending={isPending} />;
+    return <ConnectedState instanceName={state.instanceName} onDisconnect={handleDisconnect} onReconfigureWebhook={handleReconfigureWebhook} isPending={isPending} />;
   }
 
   if (state.status === "connecting" || qrCode) {
@@ -309,10 +326,12 @@ function QrCodeState({
 function ConnectedState({
   instanceName,
   onDisconnect,
+  onReconfigureWebhook,
   isPending,
 }: {
   instanceName: string | null;
   onDisconnect: () => void;
+  onReconfigureWebhook: () => void;
   isPending: boolean;
 }) {
   return (
@@ -334,20 +353,35 @@ function ConnectedState({
             </p>
           )}
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onDisconnect}
-          disabled={isPending}
-          className="shrink-0 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-800/40 dark:text-red-400"
-        >
-          {isPending ? (
-            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Unlink className="mr-1.5 h-3.5 w-3.5" />
-          )}
-          Desconectar
-        </Button>
+        <div className="flex flex-col gap-2 shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onReconfigureWebhook}
+            disabled={isPending}
+          >
+            {isPending ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            Sincronizar Webhook
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onDisconnect}
+            disabled={isPending}
+            className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-800/40 dark:text-red-400"
+          >
+            {isPending ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Unlink className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            Desconectar
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

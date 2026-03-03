@@ -84,11 +84,20 @@ export async function connectWhatsApp(): Promise<{
     // Instância já existe — verifica se já está conectada
     const stateResult = await evolutionClient.getInstanceState(instanceName);
     if (stateResult.success && stateResult.data?.instance.state === "open") {
-      // Já conectada — apenas salva no banco e retorna
+      // Já conectada — salva no banco e (re)configura o webhook
       await prisma.organization.update({
         where: { id: orgId },
         data: { evolutionInstance: instanceName },
       });
+
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+      if (appUrl) {
+        await evolutionClient.configureWebhook(
+          `${appUrl}/api/webhook/whatsapp`,
+          instanceName
+        );
+      }
+
       revalidatePath("/dashboard/whatsapp");
       return { success: true, alreadyConnected: true, instanceName };
     }
@@ -170,6 +179,43 @@ export async function refreshQrCode(): Promise<{
     status: status as ConnectionStatus,
     error: qrResult.error,
   };
+}
+
+/**
+ * Força a re-configuração do webhook na Evolution API para a instância atual.
+ * Útil quando a URL do app mudou ou o webhook foi perdido.
+ */
+export async function reconfigureWebhook(): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  const orgId = await getCurrentUserOrgId();
+
+  const org = await prisma.organization.findUnique({
+    where: { id: orgId },
+    select: { evolutionInstance: true },
+  });
+
+  if (!org?.evolutionInstance) {
+    return { success: false, error: "Instância WhatsApp não encontrada." };
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!appUrl) {
+    return { success: false, error: "NEXT_PUBLIC_APP_URL não configurado." };
+  }
+
+  const result = await evolutionClient.configureWebhook(
+    `${appUrl}/api/webhook/whatsapp`,
+    org.evolutionInstance
+  );
+
+  if (!result.success) {
+    return { success: false, error: result.error };
+  }
+
+  console.log(`[WhatsApp] Webhook reconfigurado para ${appUrl}/api/webhook/whatsapp (${org.evolutionInstance})`);
+  return { success: true };
 }
 
 /**
