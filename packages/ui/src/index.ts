@@ -33,5 +33,8 @@ export { Spinner } from "./components/spinner";
 export { PhoneInput, COUNTRIES } from "./components/phone-input";
 export type { PhoneInputProps, Country } from "./components/phone-input";
 
+export { Logo } from "./components/logo";
+export type { LogoProps } from "./components/logo";
+
 // Utils
 export { cn } from "./lib/utils";
