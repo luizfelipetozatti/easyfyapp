@@ -5,6 +5,7 @@
 
 import { prisma } from "@easyfyapp/database";
 import { NextRequest, NextResponse } from "next/server";
+import { evolutionClient } from "@/lib/evolution-client";
 
 interface EvolutionWebhookPayload {
   event: string;
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
             payload.data.message.extendedTextMessage?.text ||
             "";
 
-          await handleIncomingMessage(phone, text.trim().toLowerCase());
+          await handleIncomingMessage(phone, text.trim().toLowerCase(), payload.instance);
         }
         break;
       }
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Handler para mensagens recebidas
-async function handleIncomingMessage(phone: string, text: string) {
+async function handleIncomingMessage(phone: string, text: string, instanceName: string) {
   // Buscar booking pendente mais recente deste telefone
   const booking = await prisma.booking.findFirst({
     where: {
@@ -102,12 +103,30 @@ async function handleIncomingMessage(phone: string, text: string) {
       data: { status: "CONFIRMADO" },
     });
     console.log(`[Webhook] Booking ${booking.id} confirmed via WhatsApp`);
+
+    // Enviar resposta de confirmação ao cliente
+    await evolutionClient.sendText(
+      {
+        number: phone,
+        text: `✅ *Agendamento confirmado!*\n\nObrigado, ${booking.clientName}! Seu agendamento para *${booking.service.name}* foi confirmado.\n\n_${booking.organization.name}_`,
+      },
+      instanceName
+    );
   } else if (cancelKeywords.some((kw) => text.includes(kw))) {
     await prisma.booking.update({
       where: { id: booking.id },
       data: { status: "CANCELADO" },
     });
     console.log(`[Webhook] Booking ${booking.id} cancelled via WhatsApp`);
+
+    // Enviar resposta de cancelamento ao cliente
+    await evolutionClient.sendText(
+      {
+        number: phone,
+        text: `❌ *Agendamento cancelado.*\n\nEntendido, ${booking.clientName}. Seu agendamento para *${booking.service.name}* foi cancelado.\n\nSe desejar reagendar, acesse nosso link de agendamento.\n\n_${booking.organization.name}_`,
+      },
+      instanceName
+    );
   }
 }
 

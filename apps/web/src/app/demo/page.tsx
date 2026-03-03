@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@easyfyapp/ui";
+import { Button, Logo } from "@easyfyapp/ui";
 import {
   Calendar,
   MessageCircle,
@@ -421,8 +421,7 @@ export default function DemoPage() {
             Voltar
           </Link>
           <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
-            <span className="font-bold">Easyfy</span>
+            <Logo className="h-8" />
             <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
               Demo
             </span>

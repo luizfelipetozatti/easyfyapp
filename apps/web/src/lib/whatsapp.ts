@@ -11,6 +11,7 @@ import {
   renderTemplate,
   type TemplateType,
 } from "@/lib/whatsapp-constants";
+import { evolutionClient } from "@/lib/evolution-client";
 
 // Re-export for convenience
 export { DEFAULT_TEMPLATES, TEMPLATE_META, renderTemplate, type TemplateType };
@@ -19,15 +20,11 @@ export { DEFAULT_TEMPLATES, TEMPLATE_META, renderTemplate, type TemplateType };
 // TYPES
 // ============================================================
 
-interface WhatsAppConfig {
-  apiUrl: string;
-  apiKey: string;
-  instance: string;
-}
-
 interface SendMessagePayload {
   number: string;
   text: string;
+  /** Instância da Evolution API a ser usada (per-tenant) */
+  instanceName?: string;
 }
 
 export interface BookingMessageData {
@@ -116,22 +113,35 @@ export function buildBookingReminderMessage(
   });
 }
 
-function getConfig(): WhatsAppConfig {
-  const apiUrl = process.env.EVOLUTION_API_URL;
-  const apiKey = process.env.EVOLUTION_API_KEY;
-  const instance = process.env.EVOLUTION_INSTANCE;
+// ============================================================
+// INSTANCE RESOLVER — busca a instância da org no banco
+// ============================================================
 
-  if (!apiUrl || !apiKey || !instance) {
-    throw new Error(
-      "Missing Evolution API config: EVOLUTION_API_URL, EVOLUTION_API_KEY, EVOLUTION_INSTANCE"
-    );
+/**
+ * Retorna o nome da instância Evolution API da organização.
+ * Fallback para a instância global (env var) se a org não tiver configurado.
+ */
+async function resolveInstance(orgId: string | undefined): Promise<string | undefined> {
+  if (!orgId) {
+    console.warn("[WhatsApp] resolveInstance: orgId não fornecido");
+    return undefined;
   }
 
-  return { apiUrl, apiKey, instance };
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { evolutionInstance: true },
+    });
+    console.log(`[WhatsApp] resolveInstance: orgId=${orgId} → evolutionInstance=${org?.evolutionInstance ?? "null"}`);
+    return org?.evolutionInstance ?? undefined;
+  } catch (err) {
+    console.error("[WhatsApp] resolveInstance: erro ao buscar org:", err);
+    return undefined;
+  }
 }
 
 // ============================================================
-// API Calls - Evolution API
+// SEND — delega ao evolutionClient
 // ============================================================
 
 async function sendTextMessage(payload: SendMessagePayload): Promise<{
@@ -139,54 +149,26 @@ async function sendTextMessage(payload: SendMessagePayload): Promise<{
   messageId?: string;
   error?: string;
 }> {
-  const config = getConfig();
-
-  try {
-    const response = await fetch(
-      `${config.apiUrl}/message/sendText/${config.instance}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: config.apiKey,
-        },
-        body: JSON.stringify({
-          number: payload.number,
-          options: {
-            delay: 1200,
-            presence: "composing",
-          },
-          textMessage: {
-            text: payload.text,
-          },
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error(
-        `[WhatsApp] Error sending message: ${response.status}`,
-        errorBody
-      );
-      return {
-        success: false,
-        error: `HTTP ${response.status}: ${errorBody}`,
-      };
-    }
-
-    const result = await response.json();
-    console.log(`[WhatsApp] Message sent to ${payload.number}`);
-
-    return {
-      success: true,
-      messageId: result?.key?.id,
-    };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    console.error(`[WhatsApp] Send failed:`, message);
-    return { success: false, error: message };
+  // Org sem WhatsApp conectado — não tenta enviar
+  if (!payload.instanceName) {
+    console.warn(`[WhatsApp] Organização sem instância configurada. Mensagem para ${payload.number} ignorada.`);
+    return { success: false, error: "Nenhuma instância WhatsApp configurada para esta organização." };
   }
+
+  const result = await evolutionClient.sendText(
+    { number: payload.number, text: payload.text },
+    payload.instanceName
+  );
+
+  if (result.success) {
+    console.log(`[WhatsApp] Mensagem enviada para ${payload.number} via instância: ${payload.instanceName}`);
+  }
+
+  return {
+    success: result.success,
+    messageId: result.data?.key?.id,
+    error: result.error,
+  };
 }
 
 // ============================================================
@@ -200,7 +182,11 @@ export async function sendBookingConfirmation(
     locale: ptBR,
   });
 
-  const template = await resolveTemplate(data.organizationId, "CONFIRMATION");
+  const [template, instanceName] = await Promise.all([
+    resolveTemplate(data.organizationId, "CONFIRMATION"),
+    resolveInstance(data.organizationId),
+  ]);
+
   const text = renderTemplate(template, {
     nome: data.clientName,
     serviço: data.serviceName,
@@ -208,7 +194,7 @@ export async function sendBookingConfirmation(
     organização: data.organizationName,
   });
 
-  return sendTextMessage({ number: data.clientPhone, text });
+  return sendTextMessage({ number: data.clientPhone, text, instanceName });
 }
 
 export async function sendBookingCancellation(
@@ -221,7 +207,11 @@ export async function sendBookingCancellation(
     locale: ptBR,
   });
 
-  const template = await resolveTemplate(data.organizationId, "CANCELLATION");
+  const [template, instanceName] = await Promise.all([
+    resolveTemplate(data.organizationId, "CANCELLATION"),
+    resolveInstance(data.organizationId),
+  ]);
+
   const text = renderTemplate(template, {
     nome: data.clientName,
     serviço: data.serviceName,
@@ -229,7 +219,7 @@ export async function sendBookingCancellation(
     organização: "",
   });
 
-  return sendTextMessage({ number: data.clientPhone, text });
+  return sendTextMessage({ number: data.clientPhone, text, instanceName });
 }
 
 export async function sendBookingReminder(
@@ -247,7 +237,11 @@ export async function sendBookingReminder(
     locale: ptBR,
   });
 
-  const template = await resolveTemplate(data.organizationId, "REMINDER");
+  const [template, instanceName] = await Promise.all([
+    resolveTemplate(data.organizationId, "REMINDER"),
+    resolveInstance(data.organizationId),
+  ]);
+
   const text = renderTemplate(template, {
     nome: data.clientName,
     serviço: data.serviceName,
@@ -255,5 +249,5 @@ export async function sendBookingReminder(
     organização: data.organizationName,
   });
 
-  return sendTextMessage({ number: data.clientPhone, text });
+  return sendTextMessage({ number: data.clientPhone, text, instanceName });
 }

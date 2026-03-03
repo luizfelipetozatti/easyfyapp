@@ -286,27 +286,27 @@ export async function createBookingAction(input: CreateBookingInput) {
       },
     });
 
-    // 5. Disparar WhatsApp (fire-and-forget, não bloqueia)
-    sendBookingConfirmation({
-      clientName: booking.clientName,
-      clientPhone: booking.clientPhone,
-      serviceName: booking.service.name,
-      startTime: booking.startTime,
-      price: Number(booking.service.price),
-      organizationName: booking.organization.name,
-    })
-      .then(async (result) => {
-        // Atualizar flag no banco
-        if (result.success) {
-          await prisma.booking.update({
-            where: { id: booking.id },
-            data: { whatsappSent: true },
-          });
-        }
-      })
-      .catch((err) => {
-        console.error("[Booking] WhatsApp send error:", err);
+    // 5. Enviar confirmação WhatsApp (aguarda para garantir que não seja cancelado pelo Next.js)
+    try {
+      const whatsappResult = await sendBookingConfirmation({
+        clientName: booking.clientName,
+        clientPhone: booking.clientPhone,
+        serviceName: booking.service.name,
+        startTime: booking.startTime,
+        price: Number(booking.service.price),
+        organizationName: booking.organization.name,
+        organizationId: booking.organization.id,
       });
+
+      if (whatsappResult.success) {
+        await prisma.booking.update({
+          where: { id: booking.id },
+          data: { whatsappSent: true },
+        });
+      }
+    } catch (err) {
+      console.error("[Booking] WhatsApp send error:", err);
+    }
 
     revalidatePath(`/dashboard/bookings`);
 
@@ -353,14 +353,17 @@ export async function updateBookingStatusAction(
 
     // Enviar notificação de cancelamento via WhatsApp
     if (status === "CANCELADO") {
-      sendBookingCancellation({
-        clientName: booking.clientName,
-        clientPhone: booking.clientPhone,
-        serviceName: booking.service.name,
-        startTime: booking.startTime,
-      }).catch((err) => {
+      try {
+        await sendBookingCancellation({
+          clientName: booking.clientName,
+          clientPhone: booking.clientPhone,
+          serviceName: booking.service.name,
+          startTime: booking.startTime,
+          organizationId: booking.organization.id,
+        });
+      } catch (err) {
         console.error("[Booking] Cancel WhatsApp error:", err);
-      });
+      }
     }
 
     revalidatePath(`/dashboard/bookings`);

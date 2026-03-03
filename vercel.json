@@ -7,6 +7,12 @@
       "maxDuration": 10
     }
   },
+  "crons": [
+    {
+      "path": "/api/cron/reminders",
+      "schedule": "0 * * * *"
+    }
+  ],
   "env": {
     "SKIP_ENV_VALIDATION": "true"
   }

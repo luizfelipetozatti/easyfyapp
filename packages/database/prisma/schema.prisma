@@ -152,6 +152,7 @@ model Booking {
   status         BookingStatus @default(PENDENTE)
   notes          String?
   whatsappSent   Boolean       @default(false) @map("whatsapp_sent")
+  reminderSent   Boolean       @default(false) @map("reminder_sent")
   createdAt      DateTime      @default(now()) @map("created_at")
   updatedAt      DateTime      @updatedAt @map("updated_at")
 
