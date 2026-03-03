@@ -49,11 +49,12 @@ export const DEFAULT_TEMPLATES: Record<TemplateType, string> = {
   REMINDER: [
     "Lembrete: Olá {{nome}}! 🔔",
     "",
-    "Sua consulta/reserva para *{{serviço}}* é amanhã, *{{data}}*.",
+    "Seu agendamento para *{{serviço}}* é amanhã, *{{data}}*.",
     "",
     "📍 *{{organização}}*",
     "",
-    "Confirme sua presença respondendo esta mensagem.",
+    "Para *confirmar* sua presença, responda: *SIM*",
+    "Para *cancelar*, responda: *CANCELAR*",
     "",
     "_Mensagem automática - Easyfy_",
   ].join("\n"),
@@ -79,7 +80,7 @@ export const TEMPLATE_META: Record<
   },
   REMINDER: {
     label: "Lembrete (24h antes)",
-    description: "Enviada 24 horas antes do agendamento",
+    description: "Enviada 24 horas antes do agendamento — aguarda resposta SIM ou CANCELAR",
     variables: ["{{nome}}", "{{serviço}}", "{{data}}", "{{organização}}"],
   },
 };

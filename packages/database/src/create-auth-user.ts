@@ -23,7 +23,7 @@ async function createAuthUser() {
   console.log(`   Supabase ID: ${data.user?.id}`);
 
   // Atualizar user no banco com supabase_id
-  const { PrismaClient } = await import("@prisma/client");
+  const { PrismaClient } = await import("./generated/prisma");
   const prisma = new PrismaClient();
 
   await prisma.user.update({
