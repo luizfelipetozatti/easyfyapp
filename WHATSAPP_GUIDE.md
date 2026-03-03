@@ -22,21 +22,122 @@ Evolution API é uma API REST para integração com WhatsApp via WhatsApp Web Pr
 
 ---
 
+## Pré-requisitos da Evolution API
+
+> ⚠️ A Evolution API v2 **requer** PostgreSQL e Redis para funcionar corretamente em produção.
+> Sem eles, as sessões WhatsApp são perdidas a cada restart do servidor.
+
+### PostgreSQL
+A Evolution API usa PostgreSQL (via Prisma) para persistir instâncias, mensagens e contatos.
+Variáveis necessárias **no servidor da Evolution API**:
+
+```env
+DATABASE_ENABLED=true
+DATABASE_PROVIDER=postgresql
+DATABASE_CONNECTION_URI=postgresql://evolution:senha@localhost:5432/evolution?schema=public
+DATABASE_CONNECTION_CLIENT_NAME=evolution_easyfy
+DATABASE_SAVE_DATA_INSTANCE=true
+DATABASE_SAVE_DATA_NEW_MESSAGE=true
+DATABASE_SAVE_MESSAGE_UPDATE=true
+DATABASE_SAVE_DATA_CONTACTS=true
+DATABASE_SAVE_DATA_CHATS=true
+DATABASE_SAVE_DATA_LABELS=true
+DATABASE_SAVE_DATA_HISTORIC=true
+```
+
+### Redis
+O Redis é usado como cache para melhorar o desempenho e armazenar estado das conexões.
+Variáveis necessárias **no servidor da Evolution API**:
+
+```env
+CACHE_REDIS_ENABLED=true
+CACHE_REDIS_URI=redis://localhost:6379/6
+CACHE_REDIS_PREFIX_KEY=evolution
+CACHE_REDIS_SAVE_INSTANCES=false
+CACHE_LOCAL_ENABLED=false
+```
+
+> 📌 **Importante**: essas variáveis são para o processo da Evolution API, NÃO para o `.env.local` do Easyfy.
+> O Easyfy só precisa de `EVOLUTION_API_URL`, `EVOLUTION_API_KEY` e `EVOLUTION_INSTANCE`.
+
+---
+
 ## Instalação e Setup
 
-### Opção 1: Docker (Recomendado para Desenvolvimento)
+### Opção 1: Docker Compose (Recomendado — inclui PostgreSQL e Redis)
+
+Crie um arquivo `docker-compose.yml` em um diretório separado (ex: `~/evolution-api/`):
+
+```yaml
+version: "3.9"
+
+services:
+  evolution-api:
+    image: atendai/evolution-api:latest
+    container_name: evolution-api
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - evolution-postgres
+      - evolution-redis
+    environment:
+      # Autenticação
+      AUTHENTICATION_API_KEY: "sua-chave-forte-aqui"
+      DEL_INSTANCE: "false"
+
+      # PostgreSQL
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: "postgresql"
+      DATABASE_CONNECTION_URI: "postgresql://evolution:evolution_pass@evolution-postgres:5432/evolution?schema=public"
+      DATABASE_CONNECTION_CLIENT_NAME: "evolution_easyfy"
+      DATABASE_SAVE_DATA_INSTANCE: "true"
+      DATABASE_SAVE_DATA_NEW_MESSAGE: "true"
+      DATABASE_SAVE_MESSAGE_UPDATE: "true"
+      DATABASE_SAVE_DATA_CONTACTS: "true"
+      DATABASE_SAVE_DATA_CHATS: "true"
+      DATABASE_SAVE_DATA_LABELS: "true"
+      DATABASE_SAVE_DATA_HISTORIC: "true"
+
+      # Redis
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: "redis://evolution-redis:6379/6"
+      CACHE_REDIS_PREFIX_KEY: "evolution"
+      CACHE_REDIS_SAVE_INSTANCES: "false"
+      CACHE_LOCAL_ENABLED: "false"
+
+  evolution-postgres:
+    image: postgres:15
+    container_name: evolution-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: evolution
+      POSTGRES_PASSWORD: evolution_pass
+      POSTGRES_DB: evolution
+    volumes:
+      - evolution_pg_data:/var/lib/postgresql/data
+
+  evolution-redis:
+    image: redis:7-alpine
+    container_name: evolution-redis
+    restart: always
+    volumes:
+      - evolution_redis_data:/data
+
+volumes:
+  evolution_pg_data:
+  evolution_redis_data:
+```
+
+Subir os serviços:
 
 ```bash
-# Baixar e rodar container
-docker run -d \
-  --name evolution-api \
-  -p 8080:8080 \
-  -e AUTHENTICATION_API_KEY=sua-chave-forte-aqui \
-  -e DEL_INSTANCE=false \
-  atendai/evolution-api:latest
+docker-compose up -d
 ```
 
 Acesse: http://localhost:8080/manager
+
+> ✅ Com este setup, sessões e dados persistem mesmo após reiniciar os containers.
 
 ### Opção 2: Railway (Cloud - Grátis para começar)
 
@@ -44,10 +145,63 @@ Acesse: http://localhost:8080/manager
 2. Login com GitHub
 3. New Project → Deploy from GitHub
 4. Selecione: https://github.com/EvolutionAPI/evolution-api-railway
-5. Configure variável:
-   - `AUTHENTICATION_API_KEY`: sua-chave-forte
-6. Aguarde deploy (3-5 min)
-7. Copie URL gerada (ex: `https://evolution-api-production-xxxx.up.railway.app`)
+5. No mesmo projeto, adicione os serviços de banco via **+ New → Database**:
+   - Adicione **PostgreSQL**
+   - Adicione **Redis**
+6. Clique no serviço **Redis** → aba **Variables** → copie o valor de `REDIS_URL` (ex: `redis://default:SENHA@junction.proxy.rlwy.net:PORT`)
+7. Clique no serviço **PostgreSQL** → aba **Variables** → copie o valor de `DATABASE_URL`
+8. Vá em **Variables** do serviço `evolution-api` e configure:
+
+   ```
+   AUTHENTICATION_API_KEY=sua-chave-forte
+
+   # PostgreSQL (cole a DATABASE_URL do serviço PostgreSQL)
+   DATABASE_ENABLED=true
+   DATABASE_PROVIDER=postgresql
+   DATABASE_CONNECTION_URI=postgresql://postgres:SENHA@HOST:PORT/railway
+   DATABASE_CONNECTION_CLIENT_NAME=evolution_easyfy
+   DATABASE_SAVE_DATA_INSTANCE=true
+   DATABASE_SAVE_DATA_NEW_MESSAGE=true
+   DATABASE_SAVE_MESSAGE_UPDATE=true
+   DATABASE_SAVE_DATA_CONTACTS=true
+   DATABASE_SAVE_DATA_CHATS=true
+   DATABASE_SAVE_DATA_LABELS=true
+   DATABASE_SAVE_DATA_HISTORIC=true
+
+   # Redis (cole a REDIS_URL do serviço Redis, SEM /6 no final)
+   CACHE_REDIS_ENABLED=true
+   CACHE_REDIS_URI=redis://default:SENHA@HOST:PORT
+   CACHE_REDIS_PREFIX_KEY=evolution
+   CACHE_REDIS_SAVE_INSTANCES=false
+   CACHE_LOCAL_ENABLED=false
+   ```
+
+   > ⚠️ **Cole os valores reais** copiados nas etapas 6 e 7 — não use as variáveis de referência `${{Redis.REDIS_URL}}` concatenadas com `/6`. O Railway expande referências, mas concatenar um path pode gerar URL inválida dependendo da versão.
+
+   > ⚠️ **`CACHE_REDIS_URI` sem `/6`**: o pacote `redis` (node-redis v4) usado pela Evolution API aceita URLs sem o índice de banco — ele usa o banco `0` por padrão, o que funciona corretamente. Adicionar `/6` só é necessário se você precisar isolar dados em um banco específico.
+
+   > ⚠️ **TLS (`rediss://`)**: Se o Railway fornecer uma URL com `rediss://` (dois `s`), a Evolution API v2.3.7 suporta automaticamente via node-redis v4 — não é necessário ajuste adicional.
+
+9. Aguarde novo deploy (3-5 min)
+10. Copie a URL pública gerada (ex: `https://evolution-api-production-xxxx.up.railway.app`)
+
+> ✅ Com PostgreSQL e Redis configurados corretamente, as sessões WhatsApp persistem entre deployments.
+
+#### Verificando se o Redis conectou
+
+Nos logs do serviço `evolution-api` no Railway, procure por:
+```
+# ✅ Sucesso:
+[Redis] redis ready
+
+# ❌ Falha (URL errada ou Redis inacessível):
+[Redis] redis disconnected
+```
+
+Se aparecer `redis disconnected`, verifique:
+1. `CACHE_REDIS_URI` está preenchido com o valor real (não vazio, não com variável de referência não expandida)
+2. O serviço Redis está rodando (aba **Deployments** do serviço Redis no Railway)
+3. A URL começa com `redis://` ou `rediss://`
 
 ### Opção 3: VPS/Servidor Próprio
 
@@ -286,9 +440,20 @@ curl http://localhost:8080/
 docker restart evolution-api
 ```
 
-### ❌ WhatsApp desconectou sozinho
+### ❌ WhatsApp desconectou sozinho (ou após restart)
 
-**Causa**: Sessão expirada ou WhatsApp deslogado no celular
+**Causa 1**: PostgreSQL ou Redis não configurados na Evolution API
+
+> Sem banco de dados, a Evolution API usa armazenamento local efêmero. Ao reiniciar o container, toda a sessão é perdida.
+
+**Solução**: Verifique se a Evolution API está rodando com PostgreSQL e Redis (veja seção "Pré-requisitos da Evolution API" acima). Use o docker-compose recomendado.
+
+```bash
+# Verificar se as variáveis de banco estão ativas nos logs do container
+docker logs evolution-api | grep -i "database\|redis"
+```
+
+**Causa 2**: Sessão expirada ou WhatsApp deslogado no celular
 
 **Solução**:
 ```bash
@@ -301,6 +466,41 @@ curl -X GET "$EVOLUTION_URL/instance/connect/easyfy" \
   -H "apikey: $API_KEY"
 # Escaneie novo QR Code
 ```
+
+### ❌ Erro: `[Redis] redis disconnected` nos logs
+
+**Causa**: A variável `CACHE_REDIS_URI` está vazia, com formato inválido ou a conexão está sendo recusada.
+
+Este erro vem do handler `client.on('error', ...)` do node-redis v4 — qualquer falha de conexão dispara esse log.
+
+**Checklist de diagnóstico:**
+
+1. **Verifique se a variável está realmente preenchida no ambiente:**
+   ```bash
+   # No container Docker:
+   docker exec evolution-api env | grep CACHE_REDIS
+   
+   # No Railway: Settings → Variables → confirme que CACHE_REDIS_URI não está vazio
+   ```
+
+2. **Formato correto da URL:**
+   ```
+   # ✅ Correto (sem /6 é aceito, usa banco 0 por padrão):
+   redis://default:SENHA@HOST:PORT
+
+   # ✅ Correto com TLS (Railway public URL):
+   rediss://default:SENHA@HOST:PORT
+
+   # ❌ Errado (variável de referência não expandida):
+   ${{Redis.REDIS_URL}}
+
+   # ❌ Errado (host/porta incorretos):
+   redis://localhost:6379
+   ```
+
+3. **No Railway**: copie o valor de `REDIS_URL` diretamente do serviço Redis (aba Variables) e cole como valor literal em `CACHE_REDIS_URI` no serviço evolution-api.
+
+4. **Confirme que o serviço Redis está ativo** no Railway (aba Deployments do serviço Redis deve mostrar "Active").
 
 ### ❌ Mensagem não está sendo enviada
 
