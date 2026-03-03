@@ -30,24 +30,41 @@ interface EvolutionWebhookPayload {
 export async function POST(request: NextRequest) {
   try {
     // Validar API key no header
+    // A Evolution API envia o header "apikey" com sua chave global ao disparar webhooks.
+    // Se a env var não estiver configurada, apenas logamos um aviso e continuamos.
     const apiKey = request.headers.get("apikey");
-    if (apiKey !== process.env.EVOLUTION_API_KEY) {
+    const expectedKey = process.env.EVOLUTION_API_KEY;
+
+    if (expectedKey && apiKey !== expectedKey) {
+      console.warn(`[Webhook] Unauthorized request — apikey inválido. Recebido: "${apiKey}"`);
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    if (!expectedKey) {
+      console.warn("[Webhook] EVOLUTION_API_KEY não configurado — aceitando request sem validação de chave");
+    }
+
     const payload: EvolutionWebhookPayload = await request.json();
-    console.log(`[Webhook] Event: ${payload.event}`, JSON.stringify(payload.data?.key));
+    console.log(`[Webhook] Event: ${payload.event} | Instance: ${payload.instance}`, JSON.stringify(payload.data?.key));
 
     switch (payload.event) {
       case "messages.upsert": {
         // Mensagem recebida do cliente
-        if (!payload.data.key.fromMe && payload.data.message) {
-          const phone = payload.data.key.remoteJid.replace("@s.whatsapp.net", "");
+        const { fromMe, remoteJid } = payload.data.key;
+        console.log(`[Webhook] messages.upsert | fromMe: ${fromMe} | jid: ${remoteJid}`);
+
+        if (!fromMe && payload.data.message) {
+          const phone = remoteJid
+            .replace("@s.whatsapp.net", "")
+            .replace("@c.us", "")
+            .replace(/\D/g, ""); // garante só dígitos
+
           const text =
             payload.data.message.conversation ||
             payload.data.message.extendedTextMessage?.text ||
             "";
 
+          console.log(`[Webhook] Mensagem recebida | phone: ${phone} | text: "${text}"`);
           await handleIncomingMessage(phone, text.trim().toLowerCase(), payload.instance);
         }
         break;
@@ -75,10 +92,30 @@ export async function POST(request: NextRequest) {
 
 // Handler para mensagens recebidas
 async function handleIncomingMessage(phone: string, text: string, instanceName: string) {
+  // Normaliza o telefone: remove não-dígitos e garante prefixo 55
+  const normalizedPhone = phone.replace(/\D/g, "");
+
+  // Em números brasileiros, o WhatsApp pode entregar com ou sem o 9 extra.
+  // Ex.: 5511999999999 (13 dígitos) vs 551199999999 (12 dígitos — sem o 9)
+  // Tentamos variações: exato, com 9 adicionado e sem 9.
+  const phonesToTry = new Set<string>([normalizedPhone]);
+
+  if (normalizedPhone.startsWith("55") && normalizedPhone.length === 12) {
+    // 55 + DDD(2) + 8 dígitos → adiciona o 9 na posição correta
+    phonesToTry.add(`${normalizedPhone.slice(0, 4)}9${normalizedPhone.slice(4)}`);
+  }
+  if (normalizedPhone.startsWith("55") && normalizedPhone.length === 13) {
+    // 55 + DDD(2) + 9 + 8 dígitos → remove o 9
+    const withoutNine = `${normalizedPhone.slice(0, 4)}${normalizedPhone.slice(5)}`;
+    phonesToTry.add(withoutNine);
+  }
+
+  console.log(`[Webhook] Buscando booking para phones: ${[...phonesToTry].join(", ")}`);
+
   // Buscar booking pendente mais recente deste telefone
   const booking = await prisma.booking.findFirst({
     where: {
-      clientPhone: phone,
+      clientPhone: { in: [...phonesToTry] },
       status: "PENDENTE",
     },
     orderBy: { createdAt: "desc" },
@@ -89,9 +126,11 @@ async function handleIncomingMessage(phone: string, text: string, instanceName: 
   });
 
   if (!booking) {
-    console.log(`[Webhook] No pending booking for phone: ${phone}`);
+    console.log(`[Webhook] Nenhum booking PENDENTE encontrado para: ${[...phonesToTry].join(", ")}`);
     return;
   }
+
+  console.log(`[Webhook] Booking encontrado: ${booking.id} | texto recebido: "${text}"`);
 
   // Auto-confirmar se cliente responder "sim", "confirmo", "ok"
   const confirmKeywords = ["sim", "confirmo", "ok", "confirmar", "confirmado"];
@@ -127,6 +166,8 @@ async function handleIncomingMessage(phone: string, text: string, instanceName: 
       },
       instanceName
     );
+  } else {
+    console.log(`[Webhook] Texto não reconhecido ("${text}") para booking ${booking.id} — nenhuma ação tomada`);
   }
 }
 
