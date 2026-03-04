@@ -51,8 +51,8 @@ type ReplyWindow = "confirmation" | "reminder";
 
 export async function POST(request: NextRequest) {
   try {
-    // Nota: a Evolution API n�o envia o apikey nos webhooks de sa�da.
-    // A seguran�a � garantida pela obscuridade da URL e pelo HTTPS.
+    // Nota: a Evolution API não envia o apikey nos webhooks de saída.
+    // A segurança é garantida pela obscuridade da URL e pelo HTTPS.
     const payload: EvolutionWebhookPayload = await request.json();
     console.log(
       `[Webhook] Event: ${payload.event} | Instance: ${payload.instance}`,
@@ -87,7 +87,7 @@ async function handleUpsertEvent(payload: EvolutionWebhookPayload) {
   const { fromMe, remoteJid } = payload.data.key;
   console.log(`[Webhook] messages.upsert | fromMe: ${fromMe} | jid: ${remoteJid}`);
 
-  // Ignora mensagens enviadas pelo pr�prio n�mero conectado
+  // Ignora mensagens enviadas pelo próprio número conectado
   if (fromMe || !payload.data.message) return;
 
   const phone = normalizePhone(remoteJid);
@@ -105,7 +105,7 @@ async function handleUpsertEvent(payload: EvolutionWebhookPayload) {
   const window = getReplyWindow(booking);
   if (!window) {
     console.log(
-      `[Webhook] Booking ${booking.id} (${booking.status}) n�o tem janela de resposta aberta � mensagem ignorada`
+      `[Webhook] Booking ${booking.id} (${booking.status}) não tem janela de resposta aberta → mensagem ignorada`
     );
     return;
   }
@@ -113,7 +113,7 @@ async function handleUpsertEvent(payload: EvolutionWebhookPayload) {
   const intent = parseIntent(text);
   if (intent === "unknown") {
     console.log(
-      `[Webhook] Texto n�o reconhecido ("${text}") para booking ${booking.id} � nenhuma a��o tomada`
+      `[Webhook] Texto não reconhecido ("${text}") para booking ${booking.id} → nenhuma ação tomada`
     );
     return;
   }
@@ -126,11 +126,11 @@ async function handleUpsertEvent(payload: EvolutionWebhookPayload) {
 // ============================================================
 
 /**
- * Determina qual janela de resposta est� aberta para o booking.
+ * Determina qual janela de resposta está aberta para o booking.
  *
  * - "confirmation": booking PENDENTE aguarda a primeira resposta do cliente.
- * - "reminder":     booking CONFIRMADO com lembrete enviado aguarda confirma��o final.
- * - null:           nenhuma janela aberta � mensagem deve ser ignorada.
+ * - "reminder":     booking CONFIRMADO com lembrete enviado aguarda confirmação final.
+ * - null:           nenhuma janela aberta → mensagem deve ser ignorada.
  */
 function getReplyWindow(booking: NonNullable<BookingWithRelations>): ReplyWindow | null {
   if (booking.status === "PENDENTE") {
@@ -149,11 +149,11 @@ function getReplyWindow(booking: NonNullable<BookingWithRelations>): ReplyWindow
 }
 
 /**
- * Interpreta o texto do cliente em um intent can�nico.
+ * Interpreta o texto do cliente em um intent canônico.
  */
 function parseIntent(text: string): Intent {
   const confirmKeywords = ["sim", "confirmo", "ok", "confirmar", "confirmado"];
-  const cancelKeywords  = ["cancelar", "cancela", "n�o", "nao"];
+  const cancelKeywords  = ["cancelar", "cancela", "não", "nao"];
 
   if (confirmKeywords.some((kw) => text.includes(kw))) return "confirm";
   if (cancelKeywords.some((kw) => text.includes(kw)))  return "cancel";
@@ -197,7 +197,7 @@ async function handleConfirm({
     });
     console.log(`[Webhook] Booking ${booking.id} confirmed via WhatsApp (confirmation window)`);
   } else {
-    // reminder window: j� est� CONFIRMADO, apenas fecha a janela
+    // reminder window: já está CONFIRMADO, apenas fecha a janela
     await prisma.booking.update({
       where: { id: booking.id },
       data: { reminderReplied: true },
@@ -209,9 +209,9 @@ async function handleConfirm({
     {
       number: phone,
       text: [
-        `? *Agendamento confirmado!*`,
+        `✅ *Agendamento confirmado!*`,
         ``,
-        `Obrigado, ${booking.clientName}! Seu agendamento para *${booking.service.name}* est� confirmado.`,
+        `Obrigado, ${booking.clientName}! Seu agendamento para *${booking.service.name}* está confirmado.`,
         ``,
         `_${booking.organization.name}_`,
       ].join("\n"),
@@ -230,7 +230,7 @@ async function handleCancel({
     where: { id: booking.id },
     data: {
       status: "CANCELADO",
-      // Fecha a janela de lembrete tamb�m, se estava aberta
+      // Fecha a janela de lembrete também, se estava aberta
       ...(window === "reminder" ? { reminderReplied: true } : {}),
     },
   });
@@ -240,7 +240,7 @@ async function handleCancel({
     {
       number: phone,
       text: [
-        `? *Agendamento cancelado.*`,
+        `❌ *Agendamento cancelado.*`,
         ``,
         `Entendido, ${booking.clientName}. Seu agendamento para *${booking.service.name}* foi cancelado.`,
         ``,
@@ -258,8 +258,8 @@ async function handleCancel({
 // ============================================================
 
 /**
- * Normaliza o JID do WhatsApp para apenas d�gitos.
- * Ex.: "5511999999999@s.whatsapp.net" ? "5511999999999"
+ * Normaliza o JID do WhatsApp para apenas dígitos.
+ * Ex.: "5511999999999@s.whatsapp.net" → "5511999999999"
  */
 function normalizePhone(jid: string): string {
   return jid
@@ -269,8 +269,8 @@ function normalizePhone(jid: string): string {
 }
 
 /**
- * Busca o booking ativo mais recente para um dado n�mero de telefone.
- * Tenta varia��es com/sem o d�gito 9 para cobrir a transi��o BR de 8?9 d�gitos.
+ * Busca o booking ativo mais recente para um dado número de telefone.
+ * Tenta variações com/sem o dígito 9 para cobrir a transição BR de 8?9 dígitos.
  */
 async function findActiveBooking(phone: string) {
   const phonesToTry = buildPhoneVariants(phone);
@@ -301,8 +301,8 @@ async function findActiveBooking(phone: string) {
 }
 
 /**
- * Gera varia��es do n�mero BR para contornar a diferen�a de 8 vs 9 d�gitos.
- * Ex.: "5511999999999" (13d) ? tamb�m tenta "551199999999" (12d) e vice-versa.
+ * Gera variações do número BR para contornar a diferença de 8 vs 9 dígitos.
+ * Ex.: "5511999999999" (13d) → também tenta "551199999999" (12d) e vice-versa.
  */
 function buildPhoneVariants(phone: string): Set<string> {
   const variants = new Set<string>([phone]);
