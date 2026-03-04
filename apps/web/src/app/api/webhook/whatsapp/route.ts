@@ -4,14 +4,14 @@
 //
 // Fluxo de resposta do cliente (State Machine):
 //
-//  [PENDENTE]  ---- SIM ----? [CONFIRMADO] (janela de confirmação fechada)
-//              -- CANCELAR --? [CANCELADO]  (janela de confirmação fechada)
+//  [PENDENTE]  -- SIM ------> [CONFIRMADO] (janela de confirmacao fechada)
+//              -- CANCELAR -> [CANCELADO]  (janela de confirmacao fechada)
 //
 //  [CONFIRMADO + reminderSent + !reminderReplied]
-//              ---- SIM ----? [CONFIRMADO]  (reminderReplied=true)
-//              -- CANCELAR --? [CANCELADO]  (reminderReplied=true)
+//              -- SIM ------> [CONFIRMADO]  (reminderReplied=true)
+//              -- CANCELAR -> [CANCELADO]   (reminderReplied=true)
 //
-//  Qualquer outra situação ? mensagem ignorada silenciosamente.
+//  Qualquer outra situacao -> mensagem ignorada silenciosamente.
 // ============================================================
 
 import { prisma } from "@easyfyapp/database";
@@ -51,8 +51,8 @@ type ReplyWindow = "confirmation" | "reminder";
 
 export async function POST(request: NextRequest) {
   try {
-    // Nota: a Evolution API não envia o apikey nos webhooks de saída.
-    // A segurança é garantida pela obscuridade da URL e pelo HTTPS.
+    // Nota: a Evolution API nï¿½o envia o apikey nos webhooks de saï¿½da.
+    // A seguranï¿½a ï¿½ garantida pela obscuridade da URL e pelo HTTPS.
     const payload: EvolutionWebhookPayload = await request.json();
     console.log(
       `[Webhook] Event: ${payload.event} | Instance: ${payload.instance}`,
@@ -87,7 +87,7 @@ async function handleUpsertEvent(payload: EvolutionWebhookPayload) {
   const { fromMe, remoteJid } = payload.data.key;
   console.log(`[Webhook] messages.upsert | fromMe: ${fromMe} | jid: ${remoteJid}`);
 
-  // Ignora mensagens enviadas pelo próprio número conectado
+  // Ignora mensagens enviadas pelo prï¿½prio nï¿½mero conectado
   if (fromMe || !payload.data.message) return;
 
   const phone = normalizePhone(remoteJid);
@@ -105,7 +105,7 @@ async function handleUpsertEvent(payload: EvolutionWebhookPayload) {
   const window = getReplyWindow(booking);
   if (!window) {
     console.log(
-      `[Webhook] Booking ${booking.id} (${booking.status}) não tem janela de resposta aberta — mensagem ignorada`
+      `[Webhook] Booking ${booking.id} (${booking.status}) nï¿½o tem janela de resposta aberta ï¿½ mensagem ignorada`
     );
     return;
   }
@@ -113,7 +113,7 @@ async function handleUpsertEvent(payload: EvolutionWebhookPayload) {
   const intent = parseIntent(text);
   if (intent === "unknown") {
     console.log(
-      `[Webhook] Texto não reconhecido ("${text}") para booking ${booking.id} — nenhuma ação tomada`
+      `[Webhook] Texto nï¿½o reconhecido ("${text}") para booking ${booking.id} ï¿½ nenhuma aï¿½ï¿½o tomada`
     );
     return;
   }
@@ -126,11 +126,11 @@ async function handleUpsertEvent(payload: EvolutionWebhookPayload) {
 // ============================================================
 
 /**
- * Determina qual janela de resposta está aberta para o booking.
+ * Determina qual janela de resposta estï¿½ aberta para o booking.
  *
  * - "confirmation": booking PENDENTE aguarda a primeira resposta do cliente.
- * - "reminder":     booking CONFIRMADO com lembrete enviado aguarda confirmação final.
- * - null:           nenhuma janela aberta — mensagem deve ser ignorada.
+ * - "reminder":     booking CONFIRMADO com lembrete enviado aguarda confirmaï¿½ï¿½o final.
+ * - null:           nenhuma janela aberta ï¿½ mensagem deve ser ignorada.
  */
 function getReplyWindow(booking: NonNullable<BookingWithRelations>): ReplyWindow | null {
   if (booking.status === "PENDENTE") {
@@ -149,11 +149,11 @@ function getReplyWindow(booking: NonNullable<BookingWithRelations>): ReplyWindow
 }
 
 /**
- * Interpreta o texto do cliente em um intent canônico.
+ * Interpreta o texto do cliente em um intent canï¿½nico.
  */
 function parseIntent(text: string): Intent {
   const confirmKeywords = ["sim", "confirmo", "ok", "confirmar", "confirmado"];
-  const cancelKeywords  = ["cancelar", "cancela", "não", "nao"];
+  const cancelKeywords  = ["cancelar", "cancela", "nï¿½o", "nao"];
 
   if (confirmKeywords.some((kw) => text.includes(kw))) return "confirm";
   if (cancelKeywords.some((kw) => text.includes(kw)))  return "cancel";
@@ -197,7 +197,7 @@ async function handleConfirm({
     });
     console.log(`[Webhook] Booking ${booking.id} confirmed via WhatsApp (confirmation window)`);
   } else {
-    // reminder window: já está CONFIRMADO, apenas fecha a janela
+    // reminder window: jï¿½ estï¿½ CONFIRMADO, apenas fecha a janela
     await prisma.booking.update({
       where: { id: booking.id },
       data: { reminderReplied: true },
@@ -211,7 +211,7 @@ async function handleConfirm({
       text: [
         `? *Agendamento confirmado!*`,
         ``,
-        `Obrigado, ${booking.clientName}! Seu agendamento para *${booking.service.name}* está confirmado.`,
+        `Obrigado, ${booking.clientName}! Seu agendamento para *${booking.service.name}* estï¿½ confirmado.`,
         ``,
         `_${booking.organization.name}_`,
       ].join("\n"),
@@ -230,7 +230,7 @@ async function handleCancel({
     where: { id: booking.id },
     data: {
       status: "CANCELADO",
-      // Fecha a janela de lembrete também, se estava aberta
+      // Fecha a janela de lembrete tambï¿½m, se estava aberta
       ...(window === "reminder" ? { reminderReplied: true } : {}),
     },
   });
@@ -258,7 +258,7 @@ async function handleCancel({
 // ============================================================
 
 /**
- * Normaliza o JID do WhatsApp para apenas dígitos.
+ * Normaliza o JID do WhatsApp para apenas dï¿½gitos.
  * Ex.: "5511999999999@s.whatsapp.net" ? "5511999999999"
  */
 function normalizePhone(jid: string): string {
@@ -269,8 +269,8 @@ function normalizePhone(jid: string): string {
 }
 
 /**
- * Busca o booking ativo mais recente para um dado número de telefone.
- * Tenta variações com/sem o dígito 9 para cobrir a transição BR de 8?9 dígitos.
+ * Busca o booking ativo mais recente para um dado nï¿½mero de telefone.
+ * Tenta variaï¿½ï¿½es com/sem o dï¿½gito 9 para cobrir a transiï¿½ï¿½o BR de 8?9 dï¿½gitos.
  */
 async function findActiveBooking(phone: string) {
   const phonesToTry = buildPhoneVariants(phone);
@@ -301,8 +301,8 @@ async function findActiveBooking(phone: string) {
 }
 
 /**
- * Gera variações do número BR para contornar a diferença de 8 vs 9 dígitos.
- * Ex.: "5511999999999" (13d) ? também tenta "551199999999" (12d) e vice-versa.
+ * Gera variaï¿½ï¿½es do nï¿½mero BR para contornar a diferenï¿½a de 8 vs 9 dï¿½gitos.
+ * Ex.: "5511999999999" (13d) ? tambï¿½m tenta "551199999999" (12d) e vice-versa.
  */
 function buildPhoneVariants(phone: string): Set<string> {
   const variants = new Set<string>([phone]);
