@@ -209,11 +209,14 @@ async function handleConfirm({
     {
       number: phone,
       text: [
-        `✅ *Agendamento confirmado!*`,
+        `Olá ${booking.clientName}! ✅`,
         ``,
-        `Obrigado, ${booking.clientName}! Seu agendamento para *${booking.service.name}* está confirmado.`,
+        `Seu agendamento está *confirmado*. Te esperamos!`,
         ``,
-        `_${booking.organization.name}_`,
+        `📅 *${booking.service.name}*`,
+        `📍 *${booking.organization.name}*`,
+        ``,
+        `_Mensagem automática - Easyfy_`,
       ].join("\n"),
     },
     instanceName
@@ -240,13 +243,13 @@ async function handleCancel({
     {
       number: phone,
       text: [
-        `❌ *Agendamento cancelado.*`,
+        `Olá ${booking.clientName},`,
         ``,
-        `Entendido, ${booking.clientName}. Seu agendamento para *${booking.service.name}* foi cancelado.`,
+        `Seu agendamento para *${booking.service.name}* foi *cancelado*.`,
         ``,
         `Se desejar reagendar, acesse nosso link de agendamento.`,
         ``,
-        `_${booking.organization.name}_`,
+        `_Mensagem automática - Easyfy_`,
       ].join("\n"),
     },
     instanceName
