@@ -3,16 +3,18 @@ import {
   Calendar,
   LayoutDashboard,
   Settings,
-  Users,
   Briefcase,
   LogOut,
   MessageCircle,
+  CreditCard,
 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@easyfyapp/database";
 import { signOut } from "@/app/actions/auth";
+import { SubscriptionGuard } from "./subscription-guard";
 
 export default async function DashboardLayout({
   children,
@@ -27,6 +29,18 @@ export default async function DashboardLayout({
   if (!user) {
     redirect("/login");
   }
+
+  // Verificar status da assinatura
+  const member = await prisma.organizationMember.findFirst({
+    where: { user: { supabaseId: user.id } },
+    select: {
+      organization: {
+        select: { subscription: { select: { status: true } } },
+      },
+    },
+  });
+  const subscriptionStatus = member?.organization?.subscription?.status;
+  const isCanceled = subscriptionStatus === "CANCELED" || subscriptionStatus === "PAUSED";
 
   return (
     <div className="flex min-h-screen">
@@ -74,6 +88,9 @@ export default async function DashboardLayout({
             <NavLink href="/dashboard/settings" icon={Settings}>
               Configurações
             </NavLink>
+            <NavLink href="/dashboard/billing" icon={CreditCard}>
+              Assinatura
+            </NavLink>
           </nav>
 
           {/* User */}
@@ -99,7 +116,11 @@ export default async function DashboardLayout({
 
       {/* Main */}
       <main className="flex-1 overflow-auto">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{children}</div>
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <SubscriptionGuard isCanceled={isCanceled}>
+            {children}
+          </SubscriptionGuard>
+        </div>
       </main>
     </div>
   );

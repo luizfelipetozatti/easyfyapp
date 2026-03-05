@@ -1,8 +1,16 @@
 import { Button, Logo } from "@easyfyapp/ui";
 import { Calendar, MessageCircle, Building2, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { PricingSection } from "@/components/pricing/pricing-section";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const isAuthenticated = !!user;
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header */}
@@ -12,12 +20,23 @@ export default function HomePage() {
             <Logo className="h-10" />
           </Link>
           <nav className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost">Entrar</Button>
+            <Link href="/pricing">
+              <Button variant="ghost">Preços</Button>
             </Link>
-            <Link href="/register">
-              <Button>Começar Grátis</Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link href="/dashboard">
+                <Button>Ir para o Dashboard</Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost">Entrar</Button>
+                </Link>
+                <Link href="/register">
+                  <Button>Começar Grátis</Button>
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </header>
@@ -85,6 +104,9 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+        
+        {/* Pricing */}
+        <PricingSection isAuthenticated={isAuthenticated} />
       </main>
 
       {/* Footer */}
