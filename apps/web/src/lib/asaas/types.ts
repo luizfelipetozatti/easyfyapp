@@ -149,7 +149,7 @@ export type AsaasWebhookEventType =
   | "SUBSCRIPTION_CREATED"
   | "SUBSCRIPTION_UPDATED"
   | "SUBSCRIPTION_DELETED"
-  | "SUBSCRIPTION_CANCELLED";
+  | "SUBSCRIPTION_INACTIVATED";
 
 export interface AsaasWebhookEvent {
   event: AsaasWebhookEventType;
