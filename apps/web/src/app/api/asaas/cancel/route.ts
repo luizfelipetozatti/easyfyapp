@@ -6,6 +6,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@easyfyapp/database";
+
+export const dynamic = "force-dynamic";
 import { assertAsaasConfigured } from "@/lib/asaas/client";
 import { cancelSubscription } from "@/lib/asaas/subscription-service";
 

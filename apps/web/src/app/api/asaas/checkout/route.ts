@@ -6,6 +6,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
 import { prisma } from "@easyfyapp/database";
 import { assertAsaasConfigured } from "@/lib/asaas/client";
 import { createCheckoutSession } from "@/lib/asaas/subscription-service";
