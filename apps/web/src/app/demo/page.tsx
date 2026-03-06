@@ -414,21 +414,25 @@ export default function DemoPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
-        <div className="container mx-auto flex h-14 items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2 text-sm font-semibold hover:opacity-80 transition-opacity">
-            <ArrowLeft className="h-4 w-4" />
-            Voltar
-          </Link>
-          <div className="flex items-center gap-2">
-            <Logo className="h-8" />
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+      <header className="sticky top-0 z-10 border-b bg-white">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <Link href="/" className="flex items-center gap-2">
+            <Logo className="h-10" />
+            <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-600">
               Demo
             </span>
-          </div>
-          <Link href="/register">
-            <Button size="sm">Criar Conta Grátis</Button>
           </Link>
+          <nav className="flex items-center gap-4">
+            <Link href="/pricing">
+              <Button variant="ghost">Preços</Button>
+            </Link>
+            <Link href="/login">
+              <Button variant="ghost">Entrar</Button>
+            </Link>
+            <Link href="/register">
+              <Button>Criar Conta Grátis</Button>
+            </Link>
+          </nav>
         </div>
       </header>
 
