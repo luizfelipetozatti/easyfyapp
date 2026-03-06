@@ -5,9 +5,21 @@ import { PricingSection } from "@/components/pricing/pricing-section";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Planos & Preços | Easyfy",
+  title: "Planos & Preços",
   description:
-    "Escolha o plano ideal para o seu negócio. Comece grátis por 7 dias.",
+    "Escolha o plano ideal para o seu negócio. Comece grátis por 7 dias, sem cartão de crédito.",
+  alternates: { canonical: "/pricing" },
+  openGraph: {
+    url: "/pricing",
+    title: "Planos & Preços | Easyfy",
+    description:
+      "Escolha o plano ideal para o seu negócio. Comece grátis por 7 dias, sem cartão de crédito.",
+  },
+  twitter: {
+    title: "Planos & Preços | Easyfy",
+    description:
+      "Escolha o plano ideal para o seu negócio. Comece grátis por 7 dias, sem cartão de crédito.",
+  },
 };
 
 export default async function PricingPage() {

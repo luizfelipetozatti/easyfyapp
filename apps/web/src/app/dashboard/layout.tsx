@@ -10,11 +10,17 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@easyfyapp/database";
 import { signOut } from "@/app/actions/auth";
 import { SubscriptionGuard } from "./subscription-guard";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  robots: { index: false, follow: false },
+};
 
 export default async function DashboardLayout({
   children,

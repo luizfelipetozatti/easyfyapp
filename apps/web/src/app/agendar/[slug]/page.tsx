@@ -30,11 +30,25 @@ export async function generateMetadata({ params }: BookingPageProps) {
     },
   });
 
-  if (!org) return { title: "Não encontrado" };
+  if (!org) return { title: "Não encontrado", robots: { index: false } };
+
+  const title = `Agendar em ${org.name}`;
+  const description = `Agende seu horário em ${org.name} de forma rápida e fácil. Escolha o serviço, data e horário disponível online.`;
 
   return {
-    title: `Agendar - ${org.name} | Easyfy`,
-    description: `Agende seu horário em ${org.name}`,
+    title,
+    description,
+    alternates: { canonical: `/agendar/${params.slug}` },
+    openGraph: {
+      url: `/agendar/${params.slug}`,
+      title,
+      description,
+      type: "website",
+    },
+    twitter: {
+      title,
+      description,
+    },
   };
 }
 

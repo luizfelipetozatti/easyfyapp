@@ -18,13 +18,67 @@ const quicksand = Quicksand({
 });
 
 export const metadata: Metadata = {
-  title: "Easyfy - Agendamento com WhatsApp",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://easyfy.app"
+  ),
+  title: {
+    default: "Easyfy – Agendamento online com WhatsApp automático",
+    template: "%s | Easyfy",
+  },
   description:
-    "Plataforma de agendamento para negócios locais com automação de WhatsApp",
-  keywords: ["agendamento", "whatsapp", "clínica", "coworking", "saas"],
+    "Simplifique o agendamento da sua clínica ou coworking. Seus clientes agendam online 24/7 e recebem confirmação automática pelo WhatsApp.",
+  keywords: [
+    "agendamento online",
+    "sistema de agendamento",
+    "whatsapp automático",
+    "agendamento clínica",
+    "agendamento coworking",
+    "software agendamento",
+    "saas agendamento",
+    "confirmação automática",
+    "lembretes whatsapp",
+  ],
+  applicationName: "Easyfy",
+  authors: [{ name: "Easyfy", url: "https://easyfy.app" }],
+  creator: "Easyfy",
+  publisher: "Easyfy",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    url: "/",
+    siteName: "Easyfy",
+    title: "Easyfy – Agendamento online com WhatsApp automático",
+    description:
+      "Simplifique o agendamento da sua clínica ou coworking. Seus clientes agendam online 24/7 e recebem confirmação automática pelo WhatsApp.",
+    images: [
+      {
+        url: "/images/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Easyfy – Agendamento online com WhatsApp automático",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Easyfy – Agendamento online com WhatsApp automático",
+    description:
+      "Simplifique o agendamento da sua clínica ou coworking. Seus clientes agendam online 24/7 e recebem confirmação automática pelo WhatsApp.",
+    images: ["/images/og-image.png"],
+    creator: "@easyfy_app",
+  },
   icons: {
-    icon: "/images/favicon.png",
-    apple: "/images/favicon.png",
+    icon: [
+      { url: "/images/favicon.png", type: "image/png" },
+    ],
+    apple: [
+      { url: "/images/favicon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
 };
 

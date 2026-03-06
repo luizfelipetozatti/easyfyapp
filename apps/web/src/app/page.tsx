@@ -1,8 +1,48 @@
 import { Button, Logo } from "@easyfyapp/ui";
 import { Calendar, MessageCircle, Building2, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import type { Metadata } from "next";
+import Script from "next/script";
 import { createClient } from "@/lib/supabase/server";
 import { PricingSection } from "@/components/pricing/pricing-section";
+
+export const metadata: Metadata = {
+  title: "Easyfy – Agendamento online com WhatsApp automático",
+  description:
+    "Simplifique o agendamento da sua clínica ou coworking. Seus clientes agendam online 24/7 e recebem confirmação automática pelo WhatsApp.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    url: "/",
+    title: "Easyfy – Agendamento online com WhatsApp automático",
+    description:
+      "Simplifique o agendamento da sua clínica ou coworking. Seus clientes agendam online 24/7 e recebem confirmação automática pelo WhatsApp.",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Easyfy",
+  url: "https://easyfy.app",
+  description:
+    "Plataforma SaaS de agendamento online para negócios locais com confirmação automática por WhatsApp.",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "BRL",
+    description: "Grátis por 7 dias, sem cartão de crédito",
+  },
+  inLanguage: "pt-BR",
+  publisher: {
+    "@type": "Organization",
+    name: "Easyfy",
+    url: "https://easyfy.app",
+  },
+};
 
 export default async function HomePage() {
   const supabase = createClient();
@@ -13,6 +53,11 @@ export default async function HomePage() {
   const isAuthenticated = !!user;
   return (
     <div className="flex min-h-screen flex-col">
+      <Script
+        id="jsonld-software"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Header */}
       <header className="border-b bg-white">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
