@@ -148,7 +148,7 @@ export async function createCheckoutSession(
       billingCycle,
       status: "TRIALING",
       currentPeriodStart: now,
-      currentPeriodEnd: trialEnd,
+      currentPeriodEnd: firstDueDate, // primeiro vencimento real (após o trial)
       cancelAtPeriodEnd: false,
       trialStart: now,
       trialEnd,
@@ -160,7 +160,7 @@ export async function createCheckoutSession(
       billingCycle,
       status: "TRIALING",
       currentPeriodStart: now,
-      currentPeriodEnd: trialEnd,
+      currentPeriodEnd: firstDueDate, // primeiro vencimento real (após o trial)
       cancelAtPeriodEnd: false,
       trialStart: now,
       trialEnd,
@@ -202,15 +202,14 @@ export async function cancelSubscription(
     throw new Error("No active subscription found for this organization");
   }
 
-  // Cancelar no Asaas
+  // Cancelar no Asaas (não renova mais, mas o período atual segue válido)
   await asaasClient.subscriptions.cancel(subscription.asaasSubscriptionId);
 
-  // Atualizar status no banco
+  // Marcar como "cancela ao fim do período" — acesso permanece até currentPeriodEnd
   await prisma.subscription.update({
     where: { organizationId },
     data: {
-      status: "CANCELED",
-      cancelAtPeriodEnd: false,
+      cancelAtPeriodEnd: true,
       canceledAt: new Date(),
     },
   });

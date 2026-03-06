@@ -142,7 +142,7 @@ export function BillingCard({
                         Plano {plan.name}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {formatPrice(plan.priceMonthly)}/mes
+                        {formatPrice(plan.priceMonthly)}/mês
                       </p>
                     </div>
                   </div>
@@ -152,7 +152,7 @@ export function BillingCard({
                 {subscription.status === "TRIALING" && trialEnd && (
                   <InfoRow
                     icon={<Clock className="h-4 w-4 text-amber-500" />}
-                    label="Trial gratuito ativo ate"
+                    label="Trial gratuito ativo até"
                     value={trialEnd}
                     highlight
                   />
@@ -195,7 +195,7 @@ export function BillingCard({
                   <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
                     <AlertCircle className="h-4 w-4 flex-shrink-0" />
                     <span>
-                      Sua assinatura sera cancelada ao final do periodo atual.
+                      Sua assinatura será cancelada ao final do período atual.
                     </span>
                   </div>
                 )}

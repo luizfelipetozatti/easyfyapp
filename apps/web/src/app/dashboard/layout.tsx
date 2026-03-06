@@ -35,12 +35,21 @@ export default async function DashboardLayout({
     where: { user: { supabaseId: user.id } },
     select: {
       organization: {
-        select: { subscription: { select: { status: true } } },
+        select: {
+          subscription: {
+            select: { status: true, currentPeriodEnd: true, cancelAtPeriodEnd: true },
+          },
+        },
       },
     },
   });
-  const subscriptionStatus = member?.organization?.subscription?.status;
-  const isCanceled = subscriptionStatus === "CANCELED" || subscriptionStatus === "PAUSED";
+  const sub = member?.organization?.subscription;
+  const subscriptionStatus = sub?.status;
+  // Bloqueia apenas quando CANCELED/PAUSED E o período pago já expirou
+  const periodEnd = sub?.currentPeriodEnd ? new Date(sub.currentPeriodEnd) : null;
+  const periodExpired = !periodEnd || periodEnd < new Date();
+  const isCanceled =
+    (subscriptionStatus === "CANCELED" || subscriptionStatus === "PAUSED") && periodExpired;
 
   return (
     <div className="flex min-h-screen">

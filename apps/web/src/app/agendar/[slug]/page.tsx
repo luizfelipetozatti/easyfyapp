@@ -1,6 +1,6 @@
 import { prisma } from "@easyfyapp/database";
 import { addMonths } from "date-fns";
-import { Calendar } from "lucide-react";
+import { Calendar, CalendarOff } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import { BookingPageClient } from "./booking-client";
@@ -48,6 +48,9 @@ export default async function BookingPage({ params }: BookingPageProps) {
       status: "ACTIVE",
     },
     include: {
+      subscription: {
+        select: { status: true, currentPeriodEnd: true, cancelAtPeriodEnd: true },
+      },
       services: {
         where: { active: true },
         orderBy: { name: "asc" },
@@ -65,6 +68,50 @@ export default async function BookingPage({ params }: BookingPageProps) {
 
   if (!org) {
     notFound();
+  }
+
+  // Verificar se a assinatura está ativa
+  const sub = org.subscription;
+  const periodEnd = sub?.currentPeriodEnd ? new Date(sub.currentPeriodEnd) : null;
+  const periodExpired = !periodEnd || periodEnd < new Date();
+  const subscriptionBlocked =
+    !sub ||
+    ((sub.status === "CANCELED" || sub.status === "PAUSED") && periodExpired);
+
+  if (subscriptionBlocked) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="border-b bg-card">
+          <div className="container mx-auto flex items-center gap-3 px-4 py-6">
+            <Calendar className="h-8 w-8 text-primary" />
+            <div>
+              <h1 className="text-2xl font-bold">{org.name}</h1>
+              <p className="text-sm text-muted-foreground">
+                Agendamento online
+              </p>
+            </div>
+          </div>
+        </header>
+        <main className="container mx-auto flex flex-col items-center justify-center px-4 py-20 text-center">
+          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
+            <CalendarOff className="h-10 w-10 text-gray-400" />
+          </div>
+          <h2 className="mb-2 text-xl font-semibold text-gray-900">
+            Agendamentos temporariamente indisponíveis
+          </h2>
+          <p className="max-w-sm text-sm text-muted-foreground">
+            Esta agenda está momentaneamente fora do ar. Por favor, entre em
+            contato diretamente com {org.name} para verificar a disponibilidade.
+          </p>
+        </main>
+        <footer className="border-t py-6 text-center text-xs text-muted-foreground">
+          Powered by{" "}
+          <a href="/" className="font-medium text-primary hover:underline">
+            Easyfy
+          </a>
+        </footer>
+      </div>
+    );
   }
 
   // Números JS (0=Dom...6=Sáb) dos dias em que a org NÃO trabalha
